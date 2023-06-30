@@ -72,7 +72,7 @@ Session {
     String date;
     String group_id;
     /// index of the session in the session 
-    /// group (ex: index 1 means session 1 of 4)
+    /// group (ex: index 0 means session 1 of 4)
     int group_index;
 }
 ```
