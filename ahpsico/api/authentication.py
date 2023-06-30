@@ -1,8 +1,9 @@
 from rest_framework.authentication import BaseAuthentication
-from api import exceptions
 import firebase_admin
 from firebase_admin import credentials, auth
 from django.conf import settings
+
+from . import exceptions
 
 """SETUP FIREBASE CREDENTIALS"""
 cred = credentials.Certificate(
