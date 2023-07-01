@@ -135,17 +135,32 @@ class DoctorViewSet(
         uid = request.user.uid
         datestr = request.query_params.get("date")
         if not datestr:
-            sessions = models.Session.objects.filter(doctor_id=uid)
+            sessions = models.Session.objects.filter(doctor__id=uid)
         else:
             date = parse_datetime(datestr)
             sessions = models.Session.objects.filter(
-                doctor_id=uid,
+                doctor__id=uid,
                 date__year=date.year,
                 date__month=date.month,
                 date__day=date.day,
             )
 
         serializer = serializers.SessionSerializer(sessions, many=True)
+        serializer.is_valid(raise_exception=True)
+
+        json = JSONRenderer().render(serializer.data)
+        return JsonResponse(json)
+
+    @action(detail=True, permission_classes=[permissions.IsOwner])
+    @extend_schema(
+        request=None,
+        responses=serializers.AdviceSerializer,
+    )
+    def advices(self, request, *args, **kwargs):
+        uid = request.user.uid
+
+        advices = models.Advice.objects.filter(doctor__id=uid)
+        serializer = serializers.AdviceSerializer(advices, many=True)
         serializer.is_valid(raise_exception=True)
 
         json = JSONRenderer().render(serializer.data)
@@ -187,17 +202,17 @@ class PatientViewSet(
         upcoming = request.query_params.get("upcoming")
         now = datetime.now()
         if upcoming and is_patient:
-            sessions = models.Session.objects.filter(patient_id=pk, date__gte=now)
+            sessions = models.Session.objects.filter(patient__id=pk, date__gte=now)
         elif upcoming and not is_patient:
             sessions = models.Session.objects.filter(
-                patient_id=pk,
+                patient__id=pk,
                 doctor_id=uid,
                 date__gte=now,
             )
         elif not is_patient:
-            sessions = models.Session.objects.filter(patient_id=pk, doctor_id=uid)
+            sessions = models.Session.objects.filter(patient__id=pk, doctor__id=uid)
         else:
-            sessions = models.Session.objects.filter(patient_id=pk)
+            sessions = models.Session.objects.filter(patient__id=pk)
 
         serializer = serializers.SessionSerializer(sessions, many=True)
         serializer.is_valid(raise_exception=True)
@@ -217,19 +232,19 @@ class PatientViewSet(
         pending = request.query_params.get("pending")
         if pending and is_patient:
             sessions = models.Assignment.objects.filter(
-                patient_id=pk,
+                patient__id=pk,
                 status=enums.AssignmentStatus.PENDING,
             )
         elif pending and not is_patient:
             sessions = models.Assignment.objects.filter(
-                patient_id=pk,
-                doctor_id=uid,
+                patient__id=pk,
+                doctor__id=uid,
                 status=enums.AssignmentStatus.PENDING,
             )
         elif not is_patient:
-            sessions = models.Assignment.objects.filter(patient_id=pk, doctor_id=uid)
+            sessions = models.Assignment.objects.filter(patient__id=pk, doctor__id=uid)
         else:
-            sessions = models.Assignment.objects.filter(patient_id=pk)
+            sessions = models.Assignment.objects.filter(patient__id=pk)
 
         serializer = serializers.AssignmentSerializer(sessions, many=True)
         serializer.is_valid(raise_exception=True)
@@ -237,8 +252,34 @@ class PatientViewSet(
         json = JSONRenderer().render(serializer.data)
         return JsonResponse(json)
 
+    @action(detail=True, permission_classes=[permissions.HasPatientInformation])
+    @extend_schema(
+        request=None,
+        responses=serializers.AdviceSerializer,
+    )
+    def advices(self, request, *args, **kwargs):
+        uid = request.user.uid
+        pk = kwargs["pk"]
+        is_patient = uid == pk
 
-class SessionViewSet(viewsets.ModelViewSet):
+        if is_patient:
+            advices = models.Advice.objects.filter(patient__id=pk)
+        else:
+            advices = models.Advice.objects.filter(doctor__id=uid, patient__id=pk)
+
+        serializer = serializers.AdviceSerializer(advices, many=True)
+        serializer.is_valid(raise_exception=True)
+
+        json = JSONRenderer().render(serializer.data)
+        return JsonResponse(json)
+
+
+class SessionViewSet(
+    mixins.RetrieveModelMixin,
+    mixins.CreateModelMixin,
+    mixins.UpdateModelMixin,
+    viewsets.GenericViewSet,
+):
     """
     A viewset for viewing and editing session instances.
 
@@ -252,7 +293,13 @@ class SessionViewSet(viewsets.ModelViewSet):
     queryset = models.Session.objects.all()
 
 
-class AssignmentViewSet(viewsets.ModelViewSet):
+class AssignmentViewSet(
+    mixins.RetrieveModelMixin,
+    mixins.CreateModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
+    viewsets.GenericViewSet,
+):
     """
     A viewset for viewing and editing assignment instances.
 
@@ -264,3 +311,28 @@ class AssignmentViewSet(viewsets.ModelViewSet):
 
     serializer_class = serializers.AssignmentSerializer
     queryset = models.Assignment.objects.all()
+
+
+class AdviceViewSet(
+    mixins.RetrieveModelMixin,
+    mixins.CreateModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
+    viewsets.GenericViewSet,
+):
+    """
+    A viewset for viewing and editing advices instances.
+
+    * Requires token authentication.
+    """
+
+    authentication_classes = [authentication.FirebaseAuthentication]
+    permission_classes = [permissions.IsAdviceOwner]
+
+    serializer_class = serializers.AdviceSerializer
+    queryset = models.Advice.objects.all()
+
+    def get_permissions(self):
+        if self.action == "retrieve":
+            return [permissions.HasAdviceInformation]
+        return super().get_permissions()
