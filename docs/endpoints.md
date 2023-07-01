@@ -1,8 +1,7 @@
 # Index
 1. [Authentication](#authentication)
-    1. [POST /validation-codes](#auth1)
-    2. [POST /login](#auth2)
-    3. [POST /signup](#auth3)
+    2. [POST /login](#auth1)
+    3. [POST /signup](#auth2)
 2. [Doctors](#doctors)
     1. [GET /doctors/{id}](#doc1)
     2. [PUT /doctors/{id}](#doc2)
@@ -34,69 +33,37 @@
 
 # Authentication <a name="authentication"></a>
 
-## `@POST` /validation-codes` <a name="auth1"></a>
-### Autenticação: **Não necessária**;
-### Request body:
-```json
-{
-    "number": str,
-}
-```
+## `@POST` /login <a name="auth1"></a>
+### Autenticação: **Token**;
 ### Response body:
 ```json
 {
-    "authentication_type": "SIGNUP" || "LOGIN",
-}
-```
-
-- Envia código de validação para o telefone `$number` enviado pelo request body;
-- Verifica se já existe uma conta com esse número, 
-    - Se sim retorna `authentication_type` com `"LOGIN"`;
-    - Se não, `"SIGNUP"`;
-<br></br>
-
-## `@POST` /login <a name="auth2"></a>
-### Autenticação: **Não necessária**;
-### Request body:
-```json
-{
-    "phone_number": str,
-    "code": str,
-}
-```
-### Response body:
-```json
-{
-    "token": str,
+    "user_uuid": str,
     "is_doctor": bool,
 }
 ```
 
-- Valida se o código é valido para aquele número;
-    - Se sim, retorna tokens;
+- Valida se o token é valido,
+    - Se sim, retorna se o usuário é doutor ou não e seu uuid;
 <br></br>
 
-## `@POST` /signup <a name="auth3"></a>
-### Autenticação: **Não necessária**;
+## `@POST` /signup <a name="auth2"></a>
+### Autenticação: **Token**;
 ### Request body:
 ```json
 {
     "name": str,
     "is_doctor": bool,
-    "phone_number": str,
-    "code": str,
 }
 ```
 ### Response body:
 ```json
 {
     "user_uuid": str,
-    "token": str,
-    "is_doctor": bool,
 }
 ```
-- Valida se o código é valido para aquele número;
-    - Se sim, cria um usuário retorna tokens;
+- Valida se o token é valido,
+    - Se sim, cria um usuário e retorna uuid
 <br></br>
 
 # Doctors <a name="doctors"></a>
@@ -124,6 +91,20 @@
 
 ## `@PUT` /doctors/`{id}` <a name="doc2"></a>
 ### Autenticação: **Token**;
+### Request body:
+```json
+{
+    "photo": str,
+    "name": str,
+    "phone_number": str,
+    "description": str,
+    "crp": str,
+    "addresses": [str],
+    "pix_key": str,
+    "payment_details": str,
+    "tags": [str],
+}
+```
 ### Response body:
 ```json
 {
@@ -165,6 +146,13 @@
 
 ## `@PUT` /patients/`{id}` <a name="pat2"></a>
 ### Autenticação: **Token**;
+### Request body:
+```json
+{
+    "name": str,
+    "phone_number": str,
+    "doctor_ids": str[];
+}
 ### Response body:
 ```json
 {

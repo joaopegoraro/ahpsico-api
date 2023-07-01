@@ -1,6 +1,6 @@
 from django.db import models
 
-from .enums import SessionStatus, SessionType, AssignmentStatus
+from . import enums
 
 
 class Doctor(models.Model):
@@ -59,13 +59,13 @@ class Session(models.Model):
     group_index = models.IntegerField()
     status = models.CharField(
         max_length=200,
-        choices=SessionStatus.choices(),
-        default=SessionStatus.NOT_CONFIRMED,
+        choices=enums.SessionStatus.choices(),
+        default=enums.SessionStatus.NOT_CONFIRMED,
     )
     type = models.CharField(
         max_length=200,
-        choices=SessionType.choices(),
-        default=SessionType.INDIVIDUAL,
+        choices=enums.SessionType.choices(),
+        default=enums.SessionType.INDIVIDUAL,
     )
     date = models.DateField()
 
@@ -80,8 +80,8 @@ class Assignment(models.Model):
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
     status = models.CharField(
         max_length=200,
-        choices=AssignmentStatus.choices(),
-        default=AssignmentStatus.PENDING,
+        choices=enums.AssignmentStatus.choices(),
+        default=enums.AssignmentStatus.PENDING,
     )
     delivery_session = models.ForeignKey(Session, on_delete=models.CASCADE)
 

@@ -1,25 +1,31 @@
 from rest_framework import serializers
 
-from .models import Advice, Assignment, Doctor, Invite, Patient, Session
+from . import models
+
+
+class LoginSerializer(serializers.Serializer):
+    user_uuid = serializers.UUIDField(read_only=True)
+    is_doctor = serializers.BooleanField(read_only=True)
+
+
+class SignUpRequestSerializer(serializers.Serializer):
+    name = models.CharField(max_length=200)
+    is_doctor = serializers.BooleanField(read_only=True)
+
+
+class SignUpResponseSerializer(serializers.Serializer):
+    user_uuid = serializers.UUIDField(read_only=True)
 
 
 class DoctorSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Doctor
-        fields = [
-            "uuid",
-            "name",
-            "phone_number",
-            "description",
-            "crp",
-            "pix_key",
-            "payment_details",
-        ]
+        model = models.Doctor
+        fields = "__all__"
 
 
 class SimpleDoctorSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Doctor
+        model = models.sDoctor
         fields = [
             "uuid",
             "name",
@@ -28,7 +34,7 @@ class SimpleDoctorSerializer(serializers.ModelSerializer):
 
 class PatientSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Patient
+        model = models.Patient
         fields = [
             "uuid",
             "name",
@@ -41,12 +47,8 @@ class InviteSerializer(serializers.ModelSerializer):
     patient = serializers.PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
-        model = Invite
-        fields = [
-            "phone_number",
-            "patient",
-            "doctor",
-        ]
+        model = models.Invite
+        fields = "__all__"
 
 
 class AdviceSerializer(serializers.ModelSerializer):
@@ -54,28 +56,16 @@ class AdviceSerializer(serializers.ModelSerializer):
     patients = serializers.PrimaryKeyRelatedField(read_only=True, many=True)
 
     class Meta:
-        model = Advice
-        fields = [
-            "message",
-            "patients",
-            "doctor",
-        ]
+        model = models.Advice
+        fields = "__all__"
 
 
 class SessionSerializer(serializers.ModelSerializer):
     doctor = SimpleDoctorSerializer()
 
     class Meta:
-        model = Session
-        fields = [
-            "patient",
-            "doctor",
-            "group_id",
-            "group_index",
-            "status",
-            "type",
-            "date",
-        ]
+        model = models.Session
+        fields = "__all__"
 
 
 class AssignmentSerializer(serializers.ModelSerializer):
@@ -84,12 +74,5 @@ class AssignmentSerializer(serializers.ModelSerializer):
     delivery_session = serializers.SlugRelatedField(read_only=True, slug_field="date")
 
     class Meta:
-        model = Assignment
-        fields = [
-            "title",
-            "description",
-            "doctor",
-            "patient",
-            "status",
-            "delivery_session",
-        ]
+        model = models.Assignment
+        fields = "__all__"
