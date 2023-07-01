@@ -30,3 +30,15 @@ class UserAlreadyRegistered(APIException):
     status_code = status.HTTP_406_NOT_ACCEPTABLE
     default_detail = "The user is already registered in the app"
     default_code = "user_already_registered"
+
+
+class PatientNotRegistered(APIException):
+    status_code = status.HTTP_404_NOT_FOUND
+    default_detail = "There are no patients registered with this phone number yet"
+    default_code = "patient_not_registered"
+
+
+class PatientAlreadyWithDoctor(APIException):
+    status_code = status.HTTP_404_NOT_FOUND
+    default_detail = "You can't send the invite, the patient is already with the doctor"
+    default_code = "patient_already_with_doctor"

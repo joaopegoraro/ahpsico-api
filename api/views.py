@@ -5,10 +5,11 @@ from django.utils.dateparse import parse_datetime
 from django.utils.timezone import datetime
 from drf_spectacular.utils import extend_schema
 from rest_framework import exceptions as rest_exceptions
-from rest_framework import mixins, viewsets
+from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.parsers import JSONParser
 from rest_framework.renderers import JSONRenderer
+from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from . import authentication, enums, exceptions, models, permissions, serializers
@@ -92,6 +93,66 @@ class RegisterUser(APIView):
 
         json = JSONRenderer().render(response_serializer.data)
         return JsonResponse(json)
+
+
+class InviteViewSet(
+    mixins.RetrieveModelMixin,
+    mixins.CreateModelMixin,
+    mixins.DestroyModelMixin,
+    viewsets.GenericViewSet,
+):
+    """
+    A viewset for viewing and editing invites instances.
+
+    * Requires token authentication.
+    """
+
+    authentication_classes = [authentication.FirebaseAuthentication]
+    permission_classes = [permissions.HasInviteInformation]
+
+    serializer_class = serializers.InviteSerializer
+    queryset = models.Invite.objects.all()
+
+    def get_permissions(self):
+        if self.action == "create":
+            return [permissions.IsDoctor]
+        return super().get_permissions()
+
+    def create(self, request, *args, **kwargs):
+        uid = request.user.uid
+
+        phone_number = request.data["phone_number"]
+        if not phone_number:
+            return rest_exceptions.bad_request()
+
+        doctor = models.Doctor.objects.get(pk=uid)
+        if not doctor:
+            return rest_exceptions.PermissionDenied()
+
+        patient = models.Patient.objects.get(phone_number=phone_number)
+        if not patient:
+            raise exceptions.PatientNotRegistered()
+
+        invite = models.Invite(
+            phone_number=phone_number,
+            doctor=doctor,
+            patient=patient,
+        )
+        invite.save()
+
+        return Response(status=status.HTTP_200_OK)
+
+    @action(
+        detail=True,
+        methods=["POST"],
+        permission_classes=[permissions.IsInviteOwner],
+    )
+    def accept(self, request, *args, **kwargs):
+        invite = self.get_object()
+        invite.patient.doctors.add(invite.doctor)
+        invite.delete()
+
+        return Response(status=status.HTTP_200_OK)
 
 
 class DoctorViewSet(

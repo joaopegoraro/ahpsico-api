@@ -2,6 +2,7 @@
 1. [Authentication](#authentication)
     2. [POST /login](#auth1)
     3. [POST /signup](#auth2)
+    3. [POST /invite](#auth3)
 2. [Doctors](#doctors)
     1. [GET /doctors/{id}](#doc1)
     2. [PUT /doctors/{id}](#doc2)
@@ -64,6 +65,18 @@
 ```
 - Valida se o token é valido,
     - Se sim, cria um usuário e retorna uuid
+<br></br>
+
+## `@POST` /invite <a name="auth2"></a>
+### Autenticação: **Token**;
+### Request body:
+```json
+{
+    "phone_number": str,
+}
+```
+- Valida se o token é valido,
+    - Se sim, cria um convite para o usuário que possui o telefone informado
 <br></br>
 
 # Doctors <a name="doctors"></a>

@@ -14,6 +14,17 @@ class IsOwner(permissions.BasePermission):
         return uid == pk
 
 
+class IsDoctor(permissions.BasePermission):
+    """
+    Custom permission to only allow users who are doctor
+    """
+
+    def has_permission(self, request, view):
+        uid = request.user.uid
+        is_doctor = models.Doctor.objects.filter(pk=uid).exists()
+        return is_doctor
+
+
 class HasPatientInformation(permissions.BasePermission):
     """
     Custom permission to only allow only who should have access to the
@@ -108,4 +119,30 @@ class HasAdviceInformation(permissions.BasePermission):
         uid = request.user.uid
         is_doctor = obj.doctor.uuid == uid
         is_patient = any(patient.id == uid for patient in obj.patients)
+        return is_doctor or is_patient
+
+
+class IsInviteOwner(permissions.BasePermission):
+    """
+    Custom permission to only allow only who owns the invite,
+    which is the patient.
+    """
+
+    def has_permission(self, request, view):
+        uid = request.user.uid
+        pk = view.kwargs["pk"]
+        qs = models.Invite.objects.filter(pk=pk, patient__id=uid)
+        return qs.exists()
+
+
+class HasInviteInformation(permissions.BasePermission):
+    """
+    Custom permission to only allow only who should have access to the
+    invite information, which is the patient or the doctor.
+    """
+
+    def has_object_permission(self, request, view, obj):
+        uid = request.user.uid
+        is_doctor = obj.doctor.uuid == uid
+        is_patient = obj.patient.id == uid
         return is_doctor or is_patient
