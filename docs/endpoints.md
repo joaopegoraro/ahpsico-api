@@ -85,7 +85,6 @@
     "tags": [str],
 }
 ```
-
  - Retorna o perfil do doutor onde `doctor.uuid = $id`;
 <br></br>
 
