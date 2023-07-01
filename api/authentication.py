@@ -44,3 +44,24 @@ class FirebaseAuthentication(BaseAuthentication):
         except Exception:
             raise exceptions.FirebaseError()
         return (user, None)
+
+class FirebaseAuthentication(BaseAuthentication):
+    def authenticate(self, request):
+        """Get the authorization Token. It raises an exception when no token is given"""
+        auth_header = request.META.get("HTTP_AUTHORIZATION")
+        if not auth_header:
+            raise exceptions.NoAuthToken("No auth token provided")
+        """Decodes the token. It raises an exception when it fails."""
+        id_token = auth_header.split(" ").pop()
+        decoded_token = None
+        try:
+            decoded_token = auth.verify_id_token(id_token)
+        except Exception:
+            raise exceptions.InvalidAuthToken("Invalid auth token")
+        """Get the uid from the decoded token, then use it to find and return the user object"""
+        try:
+            uid = decoded_token.get("uid")
+            user = auth.get_user(uid)
+        except Exception:
+            raise exceptions.FirebaseError()
+        return (user, None)

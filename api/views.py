@@ -6,10 +6,14 @@ from rest_framework.decorators import action
 from rest_framework import viewsets, mixins
 from django.http import JsonResponse
 from rest_framework import exceptions as rest_exceptions
+from drf_spectacular.utils import extend_schema
+from rest_framework.decorators import permission_classes
 
 from . import exceptions
 from . import models
 from . import serializers
+from . import authentication
+from . import permissions
 
 
 class LoginUser(APIView):
@@ -19,12 +23,18 @@ class LoginUser(APIView):
     * Requires token authentication.
     """
 
+    authentication_classes = [authentication.FirebaseAuthentication]
+
+    @extend_schema(
+        request=None,
+        responses=serializers.LoginSerializer,
+    )
     def post(self, request, format=None):
         uid = request.user.uid
 
-        if models.Doctor.objects.filter(uuid=uid).exists():
+        if models.Doctor.objects.filter(pk=uid).exists():
             is_doctor = True
-        elif models.Patient.objects.filter(uuid=uid).exists():
+        elif models.Patient.objects.filter(pk=uid).exists():
             is_doctor = False
         else:
             raise exceptions.SignUpRequired()
@@ -47,11 +57,17 @@ class RegisterUser(APIView):
     * Requires token authentication.
     """
 
+    authentication_classes = [authentication.FirebaseAuthentication]
+
+    @extend_schema(
+        request=serializers.SignUpRequestSerializer,
+        responses=serializers.SignUpResponseSerializer,
+    )
     def post(self, request, format=None):
         uid = request.user.uid
 
-        user_is_doctor = models.Doctor.objects.filter(uuid=uid).exists()
-        user_is_patient = models.Patient.objects.filter(uuid=uid).exists()
+        user_is_doctor = models.Doctor.objects.filter(pk=uid).exists()
+        user_is_patient = models.Patient.objects.filter(pk=uid).exists()
         if user_is_doctor or user_is_patient:
             raise exceptions.UserAlreadyRegistered()
 
@@ -63,10 +79,10 @@ class RegisterUser(APIView):
         is_doctor = request_serializer.data["is_doctor"]
         try:
             if is_doctor:
-                doctor = models.Doctor(uuid=uid, name=name)
+                doctor = models.Doctor(pk=uid, name=name)
                 doctor.save()
             else:
-                patient = models.Patient(uuid=uid, name=name)
+                patient = models.Patient(pk=uid, name=name)
                 patient.save()
         except Exception:
             raise rest_exceptions.ParserError()
@@ -91,23 +107,19 @@ class DoctorViewSet(
     * Requires token authentication.
     """
 
+    authentication_classes = [authentication.FirebaseAuthentication]
+    permission_classes = [permissions.IsOwner]
+
     serializer_class = serializers.DoctorSerializer
     queryset = models.Doctor.objects.all()
 
-    def update(self, request, *args, **kwargs):
-        uid = request.user.uid
-        pk = self.kwargs["pk"]
-        if uid != pk:
-            raise rest_exceptions.PermissionDenied()
-
-        return super().update(request, *args, **kwargs)
-
-    @action(detail=True)
+    @action(detail=True, permission_classes=[permissions.IsOwner])
+    @extend_schema(
+        request=None,
+        responses=serializers.PatientSerializer,
+    )
     def patients(self, request, *args, **kwargs):
         uid = request.user.uid
-        pk = self.kwargs["pk"]
-        if uid != pk:
-            raise rest_exceptions.PermissionDenied()
 
         patients = models.Patient.objects.filter(doctors__id=uid)
         serializer = serializers.PatientSerializer(patients, many=True)
@@ -128,24 +140,28 @@ class PatientViewSet(
     * Requires token authentication.
     """
 
+    authentication_classes = [authentication.FirebaseAuthentication]
+
     serializer_class = serializers.PatientSerializer
     queryset = models.Patient.objects.all()
 
-    def retrieve(self, request, *args, **kwargs):
-        uid = request.user.uid
-        pk = self.kwargs["pk"]
-        if uid != pk:
-            qs = models.Patient.objects.filter(uuid=pk, doctors__id=uid)
-            is_patients_doctor = qs.exists()
-            if not is_patients_doctor:
-                raise rest_exceptions.PermissionDenied()
+    def get_permissions(self):
+        if self.action == "retrieve":
+            return [permissions.HasPatientInformation]
+        elif self.action == "update":
+            return [permissions.IsOwner]
+        return super().get_permissions()
 
-        return super().retrieve(request, *args, **kwargs)
 
-    def update(self, request, *args, **kwargs):
-        uid = request.user.uid
-        pk = self.kwargs["pk"]
-        if uid != pk:
-            raise rest_exceptions.PermissionDenied()
+class SessionViewSet(viewsets.ModelViewSet):
+    """
+    A viewset for viewing and editing session instances.
 
-        return super().update(request, *args, **kwargs)
+    * Requires token authentication.
+    """
+
+    authentication_classes = [authentication.FirebaseAuthentication]
+    permission_classes = [permissions.HasSessionInformation]
+
+    serializer_class = serializers.SessionSerializer
+    queryset = models.Session.objects.all()

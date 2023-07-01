@@ -1,12 +1,23 @@
 from django.contrib import admin
-from django.urls import include, path, re_path
-
-from rest_framework_swagger.views import get_swagger_view
-
-schema_view = get_swagger_view(title="Pastebin API")
+from django.urls import include, path
+from drf_spectacular.views import (
+    SpectacularAPIView,
+    SpectacularRedocView,
+    SpectacularSwaggerView,
+)
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    re_path(r"^$", schema_view),
+    path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
+    path(
+        "api/schema/swagger-ui/",
+        SpectacularSwaggerView.as_view(url_name="schema"),
+        name="swagger-ui",
+    ),
+    path(
+        "api/schema/redoc/",
+        SpectacularRedocView.as_view(url_name="schema"),
+        name="redoc",
+    ),
     path("", include("api.urls")),
 ]

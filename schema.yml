@@ -1,0 +1,363 @@
+openapi: 3.0.3
+info:
+  title: Ahpsico API
+  version: 1.0.0
+  description: Backend for the Ahpsico app
+paths:
+  /doctors/{uuid}/:
+    get:
+      operationId: doctors_retrieve
+      description: |-
+        A viewset for viewing and editing doctor instances.
+
+        * Requires token authentication.
+      parameters:
+      - in: path
+        name: uuid
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this doctor.
+        required: true
+      tags:
+      - doctors
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Doctor'
+          description: ''
+    put:
+      operationId: doctors_update
+      description: |-
+        A viewset for viewing and editing doctor instances.
+
+        * Requires token authentication.
+      parameters:
+      - in: path
+        name: uuid
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this doctor.
+        required: true
+      tags:
+      - doctors
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Doctor'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Doctor'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Doctor'
+        required: true
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Doctor'
+          description: ''
+    patch:
+      operationId: doctors_partial_update
+      description: |-
+        A viewset for viewing and editing doctor instances.
+
+        * Requires token authentication.
+      parameters:
+      - in: path
+        name: uuid
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this doctor.
+        required: true
+      tags:
+      - doctors
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedDoctor'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedDoctor'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedDoctor'
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Doctor'
+          description: ''
+  /doctors/{uuid}/patients/:
+    get:
+      operationId: doctors_patients_retrieve
+      description: |-
+        A viewset for viewing and editing doctor instances.
+
+        * Requires token authentication.
+      parameters:
+      - in: path
+        name: uuid
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this doctor.
+        required: true
+      tags:
+      - doctors
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Doctor'
+          description: ''
+  /login:
+    post:
+      operationId: login_create
+      description: |-
+        View to validate firebase token and return the user's uuid and type
+
+        * Requires token authentication.
+      tags:
+      - login
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Login'
+          description: ''
+  /patients/{uuid}/:
+    get:
+      operationId: patients_retrieve
+      description: |-
+        A viewset for viewing and editing patient instances.
+
+        * Requires token authentication.
+      parameters:
+      - in: path
+        name: uuid
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this patient.
+        required: true
+      tags:
+      - patients
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Patient'
+          description: ''
+    put:
+      operationId: patients_update
+      description: |-
+        A viewset for viewing and editing patient instances.
+
+        * Requires token authentication.
+      parameters:
+      - in: path
+        name: uuid
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this patient.
+        required: true
+      tags:
+      - patients
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Patient'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Patient'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Patient'
+        required: true
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Patient'
+          description: ''
+    patch:
+      operationId: patients_partial_update
+      description: |-
+        A viewset for viewing and editing patient instances.
+
+        * Requires token authentication.
+      parameters:
+      - in: path
+        name: uuid
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this patient.
+        required: true
+      tags:
+      - patients
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedPatient'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedPatient'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedPatient'
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Patient'
+          description: ''
+  /signup:
+    post:
+      operationId: signup_create
+      description: |-
+        View to validate firebase token and create a Doctor or a Patient,
+        depending on what is passed to the "is_doctor" field in the request
+        body
+
+        * Requires token authentication.
+      tags:
+      - signup
+      security:
+      - {}
+      responses:
+        '200':
+          description: No response body
+components:
+  schemas:
+    Doctor:
+      type: object
+      properties:
+        uuid:
+          type: string
+          format: uuid
+        name:
+          type: string
+          maxLength: 200
+        phone_number:
+          type: string
+          maxLength: 200
+        description:
+          type: string
+          maxLength: 200
+        crp:
+          type: string
+          maxLength: 200
+        pix_key:
+          type: string
+          maxLength: 200
+        payment_details:
+          type: string
+          maxLength: 200
+      required:
+      - crp
+      - description
+      - name
+      - payment_details
+      - phone_number
+      - pix_key
+      - uuid
+    Login:
+      type: object
+      properties:
+        user_uuid:
+          type: string
+          format: uuid
+          readOnly: true
+        is_doctor:
+          type: boolean
+          readOnly: true
+      required:
+      - is_doctor
+      - user_uuid
+    PatchedDoctor:
+      type: object
+      properties:
+        uuid:
+          type: string
+          format: uuid
+        name:
+          type: string
+          maxLength: 200
+        phone_number:
+          type: string
+          maxLength: 200
+        description:
+          type: string
+          maxLength: 200
+        crp:
+          type: string
+          maxLength: 200
+        pix_key:
+          type: string
+          maxLength: 200
+        payment_details:
+          type: string
+          maxLength: 200
+    PatchedPatient:
+      type: object
+      properties:
+        uuid:
+          type: string
+          format: uuid
+        name:
+          type: string
+          maxLength: 200
+        phone_number:
+          type: string
+          maxLength: 200
+    Patient:
+      type: object
+      properties:
+        uuid:
+          type: string
+          format: uuid
+        name:
+          type: string
+          maxLength: 200
+        phone_number:
+          type: string
+          maxLength: 200
+      required:
+      - name
+      - phone_number
+      - uuid
