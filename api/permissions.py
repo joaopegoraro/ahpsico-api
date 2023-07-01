@@ -1,7 +1,6 @@
 from rest_framework import permissions
 
-from . import models
-from . import exceptions
+from . import exceptions, models
 
 
 class IsOwner(permissions.BasePermission):
@@ -38,7 +37,28 @@ class HasSessionInformation(permissions.BasePermission):
 
     def has_permission(self, request, view):
         uid = request.user.uid
-        if request.method == "POST":
+        if request.method == "POST" or request.method == "PUT":
+            is_doctor = uid == request.data["doctor_id"]
+            is_patient = uid == request.data["patient_id"]
+            return is_doctor or is_patient
+        return True
+
+    def has_object_permission(self, request, view, obj):
+        uid = request.user.uid
+        is_doctor = obj.doctor_id == uid
+        is_patient = obj.patient_id == uid
+        return is_doctor or is_patient
+
+
+class HasAssignmentInformation(permissions.BasePermission):
+    """
+    Custom permission to only allow only who should have access to the
+    assignment information, which is the patient or the doctor.
+    """
+
+    def has_permission(self, request, view):
+        uid = request.user.uid
+        if request.method == "POST" or request.method == "PUT":
             is_doctor = uid == request.data["doctor_id"]
             is_patient = uid == request.data["patient_id"]
             return is_doctor or is_patient

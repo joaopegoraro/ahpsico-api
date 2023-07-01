@@ -28,7 +28,7 @@
     3. [PUT /advices/{id}](#adv3)
     4. [DELETE /advices/{id}](#adv4)
     5. [GET /doctors/{id}/advices ](#adv5)
-    5. [GET /patients/{id}/advices](#adv6)
+    6. [GET /patients/{id}/advices](#adv6)
 <br></br>
 
 # Authentication <a name="authentication"></a>
@@ -459,7 +459,7 @@ onde `asignment.id = $id`,
 - Deleta tarefa do banco, onde `asignment.id = $id`;
 <br></br>
 
-## `@GET` /patients/`{id}`/assignments?pending=`{upcoming} <a name="ass5"></a>
+## `@GET` /patients/`{id}`/assignments?pending=`{pending} <a name="ass5"></a>
 ### Autenticação: **Token**;
 ### Response body:
 ```json

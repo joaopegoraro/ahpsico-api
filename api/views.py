@@ -1,19 +1,17 @@
 import io
-from rest_framework.views import APIView
-from rest_framework.renderers import JSONRenderer
-from rest_framework.parsers import JSONParser
-from rest_framework.decorators import action
-from rest_framework import viewsets, mixins
-from django.http import JsonResponse
-from rest_framework import exceptions as rest_exceptions
-from drf_spectacular.utils import extend_schema
-from rest_framework.decorators import permission_classes
 
-from . import exceptions
-from . import models
-from . import serializers
-from . import authentication
-from . import permissions
+from django.http import JsonResponse
+from django.utils.dateparse import parse_datetime
+from django.utils.timezone import datetime
+from drf_spectacular.utils import extend_schema
+from rest_framework import exceptions as rest_exceptions
+from rest_framework import mixins, viewsets
+from rest_framework.decorators import action
+from rest_framework.parsers import JSONParser
+from rest_framework.renderers import JSONRenderer
+from rest_framework.views import APIView
+
+from . import authentication, enums, exceptions, models, permissions, serializers
 
 
 class LoginUser(APIView):
@@ -128,6 +126,31 @@ class DoctorViewSet(
         json = JSONRenderer().render(serializer.data)
         return JsonResponse(json)
 
+    @action(detail=True, permission_classes=[permissions.IsOwner])
+    @extend_schema(
+        request=None,
+        responses=serializers.SessionSerializer,
+    )
+    def sessions(self, request, *args, **kwargs):
+        uid = request.user.uid
+        datestr = request.query_params.get("date")
+        if not datestr:
+            sessions = models.Session.objects.filter(doctor_id=uid)
+        else:
+            date = parse_datetime(datestr)
+            sessions = models.Session.objects.filter(
+                doctor_id=uid,
+                date__year=date.year,
+                date__month=date.month,
+                date__day=date.day,
+            )
+
+        serializer = serializers.SessionSerializer(sessions, many=True)
+        serializer.is_valid(raise_exception=True)
+
+        json = JSONRenderer().render(serializer.data)
+        return JsonResponse(json)
+
 
 class PatientViewSet(
     mixins.RetrieveModelMixin,
@@ -152,6 +175,68 @@ class PatientViewSet(
             return [permissions.IsOwner]
         return super().get_permissions()
 
+    @action(detail=True, permission_classes=[permissions.HasPatientInformation])
+    @extend_schema(
+        request=None,
+        responses=serializers.SessionSerializer,
+    )
+    def sessions(self, request, *args, **kwargs):
+        uid = request.user.uid
+        pk = kwargs["pk"]
+        is_patient = uid == pk
+        upcoming = request.query_params.get("upcoming")
+        now = datetime.now()
+        if upcoming and is_patient:
+            sessions = models.Session.objects.filter(patient_id=pk, date__gte=now)
+        elif upcoming and not is_patient:
+            sessions = models.Session.objects.filter(
+                patient_id=pk,
+                doctor_id=uid,
+                date__gte=now,
+            )
+        elif not is_patient:
+            sessions = models.Session.objects.filter(patient_id=pk, doctor_id=uid)
+        else:
+            sessions = models.Session.objects.filter(patient_id=pk)
+
+        serializer = serializers.SessionSerializer(sessions, many=True)
+        serializer.is_valid(raise_exception=True)
+
+        json = JSONRenderer().render(serializer.data)
+        return JsonResponse(json)
+
+    @action(detail=True, permission_classes=[permissions.HasPatientInformation])
+    @extend_schema(
+        request=None,
+        responses=serializers.AssignmentSerializer,
+    )
+    def assignments(self, request, *args, **kwargs):
+        uid = request.user.uid
+        pk = kwargs["pk"]
+        is_patient = uid == pk
+        pending = request.query_params.get("pending")
+        if pending and is_patient:
+            sessions = models.Assignment.objects.filter(
+                patient_id=pk,
+                status=enums.AssignmentStatus.PENDING,
+            )
+        elif pending and not is_patient:
+            sessions = models.Assignment.objects.filter(
+                patient_id=pk,
+                doctor_id=uid,
+                status=enums.AssignmentStatus.PENDING,
+            )
+        elif not is_patient:
+            sessions = models.Assignment.objects.filter(patient_id=pk, doctor_id=uid)
+        else:
+            sessions = models.Assignment.objects.filter(patient_id=pk)
+
+        serializer = serializers.AssignmentSerializer(sessions, many=True)
+        serializer.is_valid(raise_exception=True)
+
+        json = JSONRenderer().render(serializer.data)
+        return JsonResponse(json)
+
 
 class SessionViewSet(viewsets.ModelViewSet):
     """
@@ -165,3 +250,17 @@ class SessionViewSet(viewsets.ModelViewSet):
 
     serializer_class = serializers.SessionSerializer
     queryset = models.Session.objects.all()
+
+
+class AssignmentViewSet(viewsets.ModelViewSet):
+    """
+    A viewset for viewing and editing assignment instances.
+
+    * Requires token authentication.
+    """
+
+    authentication_classes = [authentication.FirebaseAuthentication]
+    permission_classes = [permissions.HasAssignmentInformation]
+
+    serializer_class = serializers.AssignmentSerializer
+    queryset = models.Assignment.objects.all()
