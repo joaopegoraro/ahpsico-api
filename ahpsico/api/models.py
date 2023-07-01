@@ -27,9 +27,9 @@ class Patient(models.Model):
 
 
 class Invite(models.Model):
+    phone_number = models.CharField(max_length=200)
     doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE)
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
-    phone_number = models.CharField(max_length=200)
 
     def __str__(self):
         return f"to {self.patient} - from {self.doctor})"
