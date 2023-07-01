@@ -13,6 +13,12 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 import os
 from pathlib import Path
 
+from api.authentication import FirebaseAuthentication
+
+
+# Connect the path with your '.env' file name
+
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -21,10 +27,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-(+_lo&x#$jv!y_)tv_)x^_mj!b4_)nm*f&dn@$n%b7w4zfi)ag"
+SECRET_KEY = os.environ.get("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = str(os.environ.get("DEBUG")) == "1"
 
 ALLOWED_HOSTS = []
 
@@ -41,9 +47,11 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     # 3rd party
     "rest_framework",
+    "rest_framework_swagger",
     # local
-    "ahpsico.api.apps.ApiConfig",
+    "api.apps.ApiConfig",
 ]
+
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -128,23 +136,8 @@ STATIC_URL = "static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-"""FIREBASE CREDENTIALS"""
-FIREBASE_ACCOUNT_TYPE = os.environ.get("FIREBASE_ACCOUNT_TYPE")
-FIREBASE_PROJECT_ID = os.environ.get("FIREBASE_PROJECT_ID")
-FIREBASE_PRIVATE_KEY_ID = os.environ.get("FIREBASE_PRIVATE_KEY_ID")
-FIREBASE_PRIVATE_KEY = os.environ.get("FIREBASE_PRIVATE_KEY")
-FIREBASE_CLIENT_EMAIL = os.environ.get("FIREBASE_CLIENT_EMAIL")
-FIREBASE_CLIENT_ID = os.environ.get("FIREBASE_CLIENT_ID")
-FIREBASE_AUTH_URI = os.environ.get("FIREBASE_AUTH_URI")
-FIREBASE_TOKEN_URI = os.environ.get("FIREBASE_TOKEN_URI")
-FIREBASE_AUTH_PROVIDER_X509_CERT_URL = os.environ.get(
-    "FIREBASE_AUTH_PROVIDER_X509_CERT_URL"
-)
-FIREBASE_CLIENT_X509_CERT_URL = os.environ.get("FIREBASE_CLIENT_X509_CERT_URL")
-
 REST_FRAMEWORK = {
-    "DEFAULT_AUTHENTICATION_CLASSES": (
-        "REST_framework.authentication.SessionAuthentication",
+    "DEFAULT_AUTHENTICATION_CLASSES": [
         "api.authentication.FirebaseAuthentication",
-    ),
+    ],
 }
