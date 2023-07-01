@@ -3,7 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.renderers import JSONRenderer
 from rest_framework.parsers import JSONParser
 from rest_framework import viewsets, mixins
-from django.http import JsonResponse
+from django.http import JsonResponse, Response
 from rest_framework import exceptions as api_exceptions
 
 from . import exceptions
@@ -92,6 +92,40 @@ class DoctorViewSet(
 
     serializer_class = serializers.DoctorSerializer
     queryset = models.Doctor.objects.all()
+
+    def update(self, request, *args, **kwargs):
+        uid = request.user.uid
+        pk = self.kwargs["pk"]
+        if uid != pk:
+            raise api_exceptions.PermissionDenied()
+
+        return super().update(request, *args, **kwargs)
+
+
+class PatientViewSet(
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    viewsets.GenericViewSet,
+):
+    """
+    A viewset for viewing and editing patient instances.
+
+    * Requires token authentication.
+    """
+
+    serializer_class = serializers.PatientSerializer
+    queryset = models.Patient.objects.all()
+
+    def retrieve(self, request, *args, **kwargs):
+        uid = request.user.uid
+        pk = self.kwargs["pk"]
+        if uid != pk:
+            qs = models.Patient.objects.filter(uuid=pk, doctor_id=uid)
+            is_patients_doctor = qs.exists()
+            if not is_patients_doctor:
+                raise api_exceptions.PermissionDenied()
+
+        return super().retrieve(request, *args, **kwargs)
 
     def update(self, request, *args, **kwargs):
         uid = request.user.uid
