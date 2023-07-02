@@ -1,6 +1,6 @@
 from rest_framework import permissions
 
-from . import exceptions, models
+from . import models
 
 
 class IsOwner(permissions.BasePermission):
@@ -11,7 +11,7 @@ class IsOwner(permissions.BasePermission):
     def has_permission(self, request, view):
         uid = request.user.uid
         pk = view.kwargs["pk"]
-        return uid == pk
+        return str(uid) == pk
 
 
 class IsDoctor(permissions.BasePermission):
@@ -34,8 +34,8 @@ class HasPatientInformation(permissions.BasePermission):
     def has_permission(self, request, view):
         uid = request.user.uid
         pk = view.kwargs["pk"]
-        if uid != pk:
-            qs = models.Patient.objects.filter(uuid=pk, doctors__id=uid)
+        if str(uid) != pk:
+            qs = models.Patient.objects.filter(pk=pk, doctors__pk=uid)
             return qs.exists()
         return True
 
@@ -49,15 +49,15 @@ class HasSessionInformation(permissions.BasePermission):
     def has_permission(self, request, view):
         uid = request.user.uid
         if request.method == "POST" or request.method == "PUT":
-            is_doctor = uid == request.data["doctor_id"]
-            is_patient = uid == request.data["patient_id"]
+            is_doctor = str(uid) == request.data["doctor_id"]
+            is_patient = str(uid) == request.data["patient_id"]
             return is_doctor or is_patient
         return True
 
     def has_object_permission(self, request, view, obj):
         uid = request.user.uid
-        is_doctor = obj.doctor.id == uid
-        is_patient = obj.patient.id == uid
+        is_doctor = obj.doctor.pk == uid
+        is_patient = obj.patient.pk == uid
         return is_doctor or is_patient
 
 
@@ -70,15 +70,15 @@ class HasAssignmentInformation(permissions.BasePermission):
     def has_permission(self, request, view):
         uid = request.user.uid
         if request.method == "POST" or request.method == "PUT":
-            is_doctor = uid == request.data["doctor_id"]
-            is_patient = uid == request.data["patient_id"]
+            is_doctor = str(uid) == request.data["doctor_id"]
+            is_patient = str(uid) == request.data["patient_id"]
             return is_doctor or is_patient
         return True
 
     def has_object_permission(self, request, view, obj):
         uid = request.user.uid
-        is_doctor = obj.doctor.id == uid
-        is_patient = obj.patient.id == uid
+        is_doctor = obj.doctor.pk == uid
+        is_patient = obj.patient.pk == uid
         return is_doctor or is_patient
 
 
@@ -91,13 +91,13 @@ class IsAdviceOwner(permissions.BasePermission):
     def has_permission(self, request, view):
         uid = request.user.uid
         if request.method == "POST" or request.method == "PUT":
-            is_doctor = uid == request.data["doctor_id"]
+            is_doctor = str(uid) == request.data["doctor_id"]
             return is_doctor
         return True
 
     def has_object_permission(self, request, view, obj):
         uid = request.user.uid
-        is_doctor = obj.doctor.id == uid
+        is_doctor = obj.doctor.pk == uid
         return is_doctor
 
 
@@ -110,15 +110,15 @@ class HasAdviceInformation(permissions.BasePermission):
     def has_permission(self, request, view):
         uid = request.user.uid
         if request.method == "POST" or request.method == "PUT":
-            is_doctor = uid == request.data["doctor_id"]
-            is_patient = uid in request.data["patient_ids"]
+            is_doctor = str(uid) == request.data["doctor_id"]
+            is_patient = str(uid) in request.data["patient_ids"]
             return is_doctor or is_patient
         return True
 
     def has_object_permission(self, request, view, obj):
         uid = request.user.uid
-        is_doctor = obj.doctor.uuid == uid
-        is_patient = any(patient.id == uid for patient in obj.patients)
+        is_doctor = obj.doctor.pk == uid
+        is_patient = any(patient.pk == uid for patient in obj.patients)
         return is_doctor or is_patient
 
 
@@ -131,7 +131,7 @@ class IsInviteOwner(permissions.BasePermission):
     def has_permission(self, request, view):
         uid = request.user.uid
         pk = view.kwargs["pk"]
-        qs = models.Invite.objects.filter(pk=pk, patient__id=uid)
+        qs = models.Invite.objects.filter(pk=pk, patient__pk=uid)
         return qs.exists()
 
 

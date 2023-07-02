@@ -48,10 +48,7 @@ class FirebaseAuthenticationTestCase(TestCase):
 
         request = factory.get("/", **self.token_header)
 
-        try:
-            auth = FirebaseAuthentication()
-            user = auth.authenticate(request)
-            expected_return = (self.firebase_user, None)
-            self.assertEqual(user, expected_return)
-        except Exception as e:
-            self.fail(e)
+        auth = FirebaseAuthentication()
+        user = auth.authenticate(request)
+        expected_return = (self.firebase_user, None)
+        self.assertEqual(user, expected_return)
