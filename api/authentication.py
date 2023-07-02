@@ -1,7 +1,8 @@
-from rest_framework.authentication import BaseAuthentication
-import firebase_admin
-from firebase_admin import credentials, auth
 import os
+
+import firebase_admin
+from firebase_admin import auth, credentials
+from rest_framework.authentication import BaseAuthentication
 
 from . import exceptions
 
@@ -27,16 +28,16 @@ default_app = firebase_admin.initialize_app(cred)
 class FirebaseAuthentication(BaseAuthentication):
     def authenticate(self, request):
         """Get the authorization Token. It raises an exception when no token is given"""
-        auth_header = request.META.get("HTTP_AUTHORIZATION")
+        auth_header = request.META.get("Authorization")
         if not auth_header:
-            raise exceptions.NoAuthToken("No auth token provided")
-        """Decodes the token. It raises an exception when it fails."""
+            raise exceptions.NoAuthToken()
+        """Removes the 'Bearer' prefix of the token"""
         id_token = auth_header.split(" ").pop()
-        decoded_token = None
+        """Decodes the token. It raises an exception when it fails."""
         try:
             decoded_token = auth.verify_id_token(id_token)
         except Exception:
-            raise exceptions.InvalidAuthToken("Invalid auth token")
+            raise exceptions.InvalidAuthToken()
         """Get the uid from the decoded token, then use it to find and return the user object"""
         try:
             uid = decoded_token.get("uid")
