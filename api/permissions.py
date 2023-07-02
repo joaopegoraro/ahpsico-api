@@ -118,7 +118,7 @@ class HasAdviceInformation(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         uid = request.user.uid
         is_doctor = obj.doctor.pk == uid
-        is_patient = any(patient.pk == uid for patient in obj.patients)
+        is_patient = obj.patients.filter(pk=uid).exists()
         return is_doctor or is_patient
 
 
@@ -143,6 +143,6 @@ class HasInviteInformation(permissions.BasePermission):
 
     def has_object_permission(self, request, view, obj):
         uid = request.user.uid
-        is_doctor = obj.doctor.uuid == uid
-        is_patient = obj.patient.id == uid
+        is_doctor = obj.doctor.pk == uid
+        is_patient = obj.patient.pk == uid
         return is_doctor or is_patient
