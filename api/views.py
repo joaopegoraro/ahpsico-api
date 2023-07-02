@@ -24,10 +24,6 @@ class LoginUser(APIView):
 
     authentication_classes = [authentication.FirebaseAuthentication]
 
-    @extend_schema(
-        request=None,
-        responses=serializers.LoginSerializer,
-    )
     def post(self, request, format=None):
         uid = request.user.uid
 
@@ -38,13 +34,8 @@ class LoginUser(APIView):
         else:
             raise exceptions.SignUpRequired()
 
-        serializer = serializers.LoginSerializer(
-            data={"user_uuid": uid, "is_doctor": is_doctor}
-        )
-        serializer.is_valid(raise_exception=True)
-
-        json = JSONRenderer().render(serializer.data)
-        return JsonResponse(json)
+        data = {"user_uuid": str(uid), "is_doctor": is_doctor}
+        return Response(data, status=200)
 
 
 class RegisterUser(APIView):
@@ -70,13 +61,12 @@ class RegisterUser(APIView):
         if user_is_doctor or user_is_patient:
             raise exceptions.UserAlreadyRegistered()
 
-        data = JSONParser().parse(request)
-        request_serializer = serializers.SignUpRequestSerializer(data=data)
+        request_serializer = serializers.SignUpRequestSerializer(data=request.data)
         request_serializer.is_valid(raise_exception=True)
 
-        name = request_serializer.data["name"]
-        is_doctor = request_serializer.data["is_doctor"]
         try:
+            name = request_serializer.data["name"]
+            is_doctor = request_serializer.data["is_doctor"]
             if is_doctor:
                 doctor = models.Doctor(pk=uid, name=name)
                 doctor.save()
@@ -84,15 +74,14 @@ class RegisterUser(APIView):
                 patient = models.Patient(pk=uid, name=name)
                 patient.save()
         except Exception:
-            raise rest_exceptions.ParserError()
+            raise rest_exceptions.ParseError()
 
         response_serializer = serializers.SignUpResponseSerializer(
             data={"user_uuid": uid}
         )
         response_serializer.is_valid(raise_exception=True)
 
-        json = JSONRenderer().render(response_serializer.data)
-        return JsonResponse(json)
+        return Response(response_serializer.data)
 
 
 class InviteViewSet(

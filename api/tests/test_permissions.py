@@ -16,7 +16,7 @@ class IsOwnerTestCase(TestCase):
         self.view = mock.MagicMock()
 
     def test_user_has_uuid_equal_to_pk_has_permission(self):
-        some_doctor = mommy.make(models.Doctor)
+        some_doctor = mommy.prepare(models.Doctor)
         self.request.user.uid = some_doctor.pk
         self.view.kwargs = {"pk": str(some_doctor.pk)}
         has_permission = self.permission.has_permission(self.request, self.view)
@@ -24,8 +24,8 @@ class IsOwnerTestCase(TestCase):
         self.assertTrue(has_permission)
 
     def test_user_has_uuid_different_to_pk_has_no_permission(self):
-        some_doctor = mommy.make(models.Doctor)
-        some_patient = mommy.make(models.Patient)
+        some_doctor = mommy.prepare(models.Doctor)
+        some_patient = mommy.prepare(models.Patient)
         self.request.user.uid = some_doctor.pk
         self.view.kwargs = {"pk": str(some_patient.pk)}
         has_permission = self.permission.has_permission(self.request, self.view)
@@ -42,7 +42,6 @@ class IsDoctorTestCase(TestCase):
 
     def test_user_is_doctor_has_permission(self):
         doctor = mommy.make(models.Doctor)
-        doctor.save()
         self.request.user.uid = doctor.uuid
         has_permission = self.permission.has_permission(self.request, self.view)
         self.assertEqual(self.request.user.uid, doctor.pk)
@@ -50,7 +49,6 @@ class IsDoctorTestCase(TestCase):
 
     def test_user_isnt_doctor_has_no_permission(self):
         doctor = mommy.make(models.Doctor)
-        doctor.save()
         self.request.user.uid = uuid.uuid4()
         has_permission = self.permission.has_permission(self.request, self.view)
         self.assertNotEqual(self.request.user.uid, doctor.pk)
@@ -60,7 +58,7 @@ class IsDoctorTestCase(TestCase):
 class HasPatientInformationTestCase(TestCase):
     def setUp(self):
         self.permission = permissions.HasPatientInformation()
-        self.patient = mommy.make(models.Patient)
+        self.patient = mommy.prepare(models.Patient)
         self.doctor = mommy.make(models.Doctor)
 
         self.request = mock.MagicMock(user=mock.MagicMock())

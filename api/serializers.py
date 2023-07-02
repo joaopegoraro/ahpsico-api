@@ -3,18 +3,13 @@ from rest_framework import serializers
 from . import models
 
 
-class LoginSerializer(serializers.Serializer):
-    user_uuid = serializers.UUIDField(read_only=True)
-    is_doctor = serializers.BooleanField(read_only=True)
-
-
 class SignUpRequestSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=200)
-    is_doctor = serializers.BooleanField(read_only=True)
+    is_doctor = serializers.BooleanField()
 
 
 class SignUpResponseSerializer(serializers.Serializer):
-    user_uuid = serializers.UUIDField(read_only=True)
+    user_uuid = serializers.UUIDField()
 
 
 class DoctorSerializer(serializers.ModelSerializer):

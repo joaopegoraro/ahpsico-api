@@ -6,11 +6,11 @@ from . import enums
 class Doctor(models.Model):
     uuid = models.UUIDField(primary_key=True)
     name = models.CharField(max_length=200)
-    phone_number = models.CharField(max_length=200, unique=True)
-    description = models.CharField(max_length=200)
-    crp = models.CharField(max_length=200)
-    pix_key = models.CharField(max_length=200)
-    payment_details = models.CharField(max_length=200)
+    phone_number = models.CharField(max_length=200, unique=True, blank=True, default="")
+    description = models.CharField(max_length=200, blank=True, default="")
+    crp = models.CharField(max_length=200, blank=True, default="")
+    pix_key = models.CharField(max_length=200, blank=True, default="")
+    payment_details = models.CharField(max_length=200, blank=True, default="")
 
     def __str__(self):
         return f"{self.name} (CRP {self.crp})"
@@ -19,7 +19,7 @@ class Doctor(models.Model):
 class Patient(models.Model):
     uuid = models.UUIDField(primary_key=True)
     name = models.CharField(max_length=200)
-    phone_number = models.CharField(max_length=200, unique=True)
+    phone_number = models.CharField(max_length=200, unique=True, blank=True, default="")
     doctors = models.ManyToManyField(Doctor)
 
     def __str__(self):

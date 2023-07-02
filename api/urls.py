@@ -12,7 +12,7 @@ router.register(r"advices", views.AdviceViewSet, basename="advices")
 router.register(r"invites", views.InviteViewSet, basename="invites")
 
 urlpatterns = [
-    path("login", views.LoginUser.as_view()),
-    path("signup", views.RegisterUser.as_view()),
+    path("login", views.LoginUser.as_view(), name="login-user"),
+    path("signup", views.RegisterUser.as_view(), name="register-user"),
     path("", include(router.urls)),
 ]

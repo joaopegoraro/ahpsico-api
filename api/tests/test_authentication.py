@@ -10,7 +10,7 @@ from ..authentication import FirebaseAuthentication
 class FirebaseAuthenticationTestCase(TestCase):
     def setUp(self) -> None:
         token = os.environ.get("DUMMY_FIREBASE_TOKEN")
-        self.token_header = {"Authorization": "Bearer " + token}
+        self.token_header = {"HTTP_AUTHORIZATION": "Bearer " + token}
         self.firebase_user = {"uid": "12345"}
 
     def test_no_auth_header_should_fail(self):

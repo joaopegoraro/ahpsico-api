@@ -28,7 +28,7 @@ default_app = firebase_admin.initialize_app(cred)
 class FirebaseAuthentication(BaseAuthentication):
     def authenticate(self, request):
         """Get the authorization Token. It raises an exception when no token is given"""
-        auth_header = request.META.get("Authorization")
+        auth_header = request.META.get("HTTP_AUTHORIZATION")
         if not auth_header:
             raise exceptions.NoAuthToken()
         """Removes the 'Bearer' prefix of the token"""
