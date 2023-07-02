@@ -4,6 +4,278 @@ info:
   version: 1.0.0
   description: Backend for the Ahpsico app
 paths:
+  /advices/:
+    post:
+      operationId: advices_create
+      description: |-
+        A viewset for viewing and editing advices instances.
+
+        * Requires token authentication.
+      tags:
+      - advices
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Advice'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Advice'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Advice'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Advice'
+          description: ''
+  /advices/{id}/:
+    get:
+      operationId: advices_retrieve
+      description: |-
+        A viewset for viewing and editing advices instances.
+
+        * Requires token authentication.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this advice.
+        required: true
+      tags:
+      - advices
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Advice'
+          description: ''
+    put:
+      operationId: advices_update
+      description: |-
+        A viewset for viewing and editing advices instances.
+
+        * Requires token authentication.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this advice.
+        required: true
+      tags:
+      - advices
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Advice'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Advice'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Advice'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Advice'
+          description: ''
+    patch:
+      operationId: advices_partial_update
+      description: |-
+        A viewset for viewing and editing advices instances.
+
+        * Requires token authentication.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this advice.
+        required: true
+      tags:
+      - advices
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAdvice'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAdvice'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAdvice'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Advice'
+          description: ''
+    delete:
+      operationId: advices_destroy
+      description: |-
+        A viewset for viewing and editing advices instances.
+
+        * Requires token authentication.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this advice.
+        required: true
+      tags:
+      - advices
+      responses:
+        '204':
+          description: No response body
+  /assignments/:
+    post:
+      operationId: assignments_create
+      description: |-
+        A viewset for viewing and editing assignment instances.
+
+        * Requires token authentication.
+      tags:
+      - assignments
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Assignment'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Assignment'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Assignment'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Assignment'
+          description: ''
+  /assignments/{id}/:
+    get:
+      operationId: assignments_retrieve
+      description: |-
+        A viewset for viewing and editing assignment instances.
+
+        * Requires token authentication.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this assignment.
+        required: true
+      tags:
+      - assignments
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Assignment'
+          description: ''
+    put:
+      operationId: assignments_update
+      description: |-
+        A viewset for viewing and editing assignment instances.
+
+        * Requires token authentication.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this assignment.
+        required: true
+      tags:
+      - assignments
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Assignment'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Assignment'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Assignment'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Assignment'
+          description: ''
+    patch:
+      operationId: assignments_partial_update
+      description: |-
+        A viewset for viewing and editing assignment instances.
+
+        * Requires token authentication.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this assignment.
+        required: true
+      tags:
+      - assignments
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAssignment'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAssignment'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAssignment'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Assignment'
+          description: ''
+    delete:
+      operationId: assignments_destroy
+      description: |-
+        A viewset for viewing and editing assignment instances.
+
+        * Requires token authentication.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this assignment.
+        required: true
+      tags:
+      - assignments
+      responses:
+        '204':
+          description: No response body
   /doctors/{uuid}/:
     get:
       operationId: doctors_retrieve
@@ -21,8 +293,6 @@ paths:
         required: true
       tags:
       - doctors
-      security:
-      - {}
       responses:
         '200':
           content:
@@ -58,8 +328,6 @@ paths:
             schema:
               $ref: '#/components/schemas/Doctor'
         required: true
-      security:
-      - {}
       responses:
         '200':
           content:
@@ -94,8 +362,30 @@ paths:
           multipart/form-data:
             schema:
               $ref: '#/components/schemas/PatchedDoctor'
-      security:
-      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Doctor'
+          description: ''
+  /doctors/{uuid}/advices/:
+    get:
+      operationId: doctors_advices_retrieve
+      description: |-
+        A viewset for viewing and editing doctor instances.
+
+        * Requires token authentication.
+      parameters:
+      - in: path
+        name: uuid
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this doctor.
+        required: true
+      tags:
+      - doctors
       responses:
         '200':
           content:
@@ -120,14 +410,140 @@ paths:
         required: true
       tags:
       - doctors
-      security:
-      - {}
       responses:
         '200':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Doctor'
+          description: ''
+  /doctors/{uuid}/sessions/:
+    get:
+      operationId: doctors_sessions_retrieve
+      description: |-
+        A viewset for viewing and editing doctor instances.
+
+        * Requires token authentication.
+      parameters:
+      - in: path
+        name: uuid
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this doctor.
+        required: true
+      tags:
+      - doctors
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Doctor'
+          description: ''
+  /invites/:
+    post:
+      operationId: invites_create
+      description: |-
+        A viewset for viewing and editing invites instances.
+
+        * Requires token authentication.
+      tags:
+      - invites
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Invite'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Invite'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Invite'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invite'
+          description: ''
+  /invites/{id}/:
+    get:
+      operationId: invites_retrieve
+      description: |-
+        A viewset for viewing and editing invites instances.
+
+        * Requires token authentication.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this invite.
+        required: true
+      tags:
+      - invites
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invite'
+          description: ''
+    delete:
+      operationId: invites_destroy
+      description: |-
+        A viewset for viewing and editing invites instances.
+
+        * Requires token authentication.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this invite.
+        required: true
+      tags:
+      - invites
+      responses:
+        '204':
+          description: No response body
+  /invites/{id}/accept/:
+    post:
+      operationId: invites_accept_create
+      description: |-
+        A viewset for viewing and editing invites instances.
+
+        * Requires token authentication.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this invite.
+        required: true
+      tags:
+      - invites
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Invite'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Invite'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Invite'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invite'
           description: ''
   /login:
     post:
@@ -164,8 +580,6 @@ paths:
         required: true
       tags:
       - patients
-      security:
-      - {}
       responses:
         '200':
           content:
@@ -201,8 +615,6 @@ paths:
             schema:
               $ref: '#/components/schemas/Patient'
         required: true
-      security:
-      - {}
       responses:
         '200':
           content:
@@ -246,6 +658,196 @@ paths:
               schema:
                 $ref: '#/components/schemas/Patient'
           description: ''
+  /patients/{uuid}/advices/:
+    get:
+      operationId: patients_advices_retrieve
+      description: |-
+        A viewset for viewing and editing patient instances.
+
+        * Requires token authentication.
+      parameters:
+      - in: path
+        name: uuid
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this patient.
+        required: true
+      tags:
+      - patients
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Patient'
+          description: ''
+  /patients/{uuid}/assignments/:
+    get:
+      operationId: patients_assignments_retrieve
+      description: |-
+        A viewset for viewing and editing patient instances.
+
+        * Requires token authentication.
+      parameters:
+      - in: path
+        name: uuid
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this patient.
+        required: true
+      tags:
+      - patients
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Patient'
+          description: ''
+  /patients/{uuid}/sessions/:
+    get:
+      operationId: patients_sessions_retrieve
+      description: |-
+        A viewset for viewing and editing patient instances.
+
+        * Requires token authentication.
+      parameters:
+      - in: path
+        name: uuid
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this patient.
+        required: true
+      tags:
+      - patients
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Patient'
+          description: ''
+  /sessions/:
+    post:
+      operationId: sessions_create
+      description: |-
+        A viewset for viewing and editing session instances.
+
+        * Requires token authentication.
+      tags:
+      - sessions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Session'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Session'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Session'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+          description: ''
+  /sessions/{id}/:
+    get:
+      operationId: sessions_retrieve
+      description: |-
+        A viewset for viewing and editing session instances.
+
+        * Requires token authentication.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this session.
+        required: true
+      tags:
+      - sessions
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+          description: ''
+    put:
+      operationId: sessions_update
+      description: |-
+        A viewset for viewing and editing session instances.
+
+        * Requires token authentication.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this session.
+        required: true
+      tags:
+      - sessions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Session'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Session'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Session'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+          description: ''
+    patch:
+      operationId: sessions_partial_update
+      description: |-
+        A viewset for viewing and editing session instances.
+
+        * Requires token authentication.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this session.
+        required: true
+      tags:
+      - sessions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedSession'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedSession'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedSession'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+          description: ''
   /signup:
     post:
       operationId: signup_create
@@ -257,13 +859,92 @@ paths:
         * Requires token authentication.
       tags:
       - signup
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignUpRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SignUpRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SignUpRequest'
+        required: true
       security:
       - {}
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SignUpResponse'
+          description: ''
 components:
   schemas:
+    Advice:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        doctor:
+          $ref: '#/components/schemas/SimpleDoctor'
+        patients:
+          type: array
+          items:
+            type: string
+            format: uuid
+          readOnly: true
+        message:
+          type: string
+          maxLength: 200
+      required:
+      - doctor
+      - id
+      - message
+      - patients
+    Assignment:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        doctor:
+          $ref: '#/components/schemas/SimpleDoctor'
+        patient:
+          type: string
+          format: uuid
+          readOnly: true
+        delivery_session:
+          type: string
+          format: date
+          readOnly: true
+        title:
+          type: string
+          maxLength: 200
+        description:
+          type: string
+          maxLength: 200
+        status:
+          $ref: '#/components/schemas/AssignmentStatusEnum'
+      required:
+      - delivery_session
+      - description
+      - doctor
+      - id
+      - patient
+      - title
+    AssignmentStatusEnum:
+      enum:
+      - PENDING
+      - DONE
+      - MISSED
+      type: string
+      description: |-
+        * `PENDING` - PENDING
+        * `DONE` - DONE
+        * `MISSED` - MISSED
     Doctor:
       type: object
       properties:
@@ -296,6 +977,26 @@ components:
       - phone_number
       - pix_key
       - uuid
+    Invite:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        doctor:
+          $ref: '#/components/schemas/SimpleDoctor'
+        patient:
+          type: string
+          format: uuid
+          readOnly: true
+        phone_number:
+          type: string
+          maxLength: 200
+      required:
+      - doctor
+      - id
+      - patient
+      - phone_number
     Login:
       type: object
       properties:
@@ -309,6 +1010,47 @@ components:
       required:
       - is_doctor
       - user_uuid
+    PatchedAdvice:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        doctor:
+          $ref: '#/components/schemas/SimpleDoctor'
+        patients:
+          type: array
+          items:
+            type: string
+            format: uuid
+          readOnly: true
+        message:
+          type: string
+          maxLength: 200
+    PatchedAssignment:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        doctor:
+          $ref: '#/components/schemas/SimpleDoctor'
+        patient:
+          type: string
+          format: uuid
+          readOnly: true
+        delivery_session:
+          type: string
+          format: date
+          readOnly: true
+        title:
+          type: string
+          maxLength: 200
+        description:
+          type: string
+          maxLength: 200
+        status:
+          $ref: '#/components/schemas/AssignmentStatusEnum'
     PatchedDoctor:
       type: object
       properties:
@@ -345,6 +1087,28 @@ components:
         phone_number:
           type: string
           maxLength: 200
+    PatchedSession:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        doctor:
+          $ref: '#/components/schemas/SimpleDoctor'
+        group_index:
+          type: integer
+        status:
+          $ref: '#/components/schemas/SessionStatusEnum'
+        type:
+          $ref: '#/components/schemas/TypeEnum'
+        date:
+          type: string
+          format: date
+        patient:
+          type: string
+          format: uuid
+        group_id:
+          type: integer
     Patient:
       type: object
       properties:
@@ -361,3 +1125,85 @@ components:
       - name
       - phone_number
       - uuid
+    Session:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        doctor:
+          $ref: '#/components/schemas/SimpleDoctor'
+        group_index:
+          type: integer
+        status:
+          $ref: '#/components/schemas/SessionStatusEnum'
+        type:
+          $ref: '#/components/schemas/TypeEnum'
+        date:
+          type: string
+          format: date
+        patient:
+          type: string
+          format: uuid
+        group_id:
+          type: integer
+      required:
+      - date
+      - doctor
+      - group_id
+      - group_index
+      - id
+      - patient
+    SessionStatusEnum:
+      enum:
+      - CONFIRMED
+      - NOT_CONFIRMED
+      - CANCELED
+      - CONCLUDED
+      type: string
+      description: |-
+        * `CONFIRMED` - CONFIRMED
+        * `NOT_CONFIRMED` - NOT_CONFIRMED
+        * `CANCELED` - CANCELED
+        * `CONCLUDED` - CONCLUDED
+    SignUpRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 200
+        is_doctor:
+          type: boolean
+          readOnly: true
+      required:
+      - is_doctor
+      - name
+    SignUpResponse:
+      type: object
+      properties:
+        user_uuid:
+          type: string
+          format: uuid
+          readOnly: true
+      required:
+      - user_uuid
+    SimpleDoctor:
+      type: object
+      properties:
+        uuid:
+          type: string
+          format: uuid
+        name:
+          type: string
+          maxLength: 200
+      required:
+      - name
+      - uuid
+    TypeEnum:
+      enum:
+      - MONTHLY
+      - INDIVIDUAL
+      type: string
+      description: |-
+        * `MONTHLY` - MONTHLY
+        * `INDIVIDUAL` - INDIVIDUAL
