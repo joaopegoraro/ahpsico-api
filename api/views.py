@@ -355,5 +355,5 @@ class AdviceViewSet(
 
     def get_permissions(self):
         if self.action == "retrieve":
-            return [permissions.HasAdviceInformation]
+            return [permissions.HasAdviceInformation()]
         return super().get_permissions()
