@@ -28,3 +28,11 @@ class LoginUserTestCase(BaseViewTestCase):
         expected_data = {"user_uuid": str(self.user.uid), "is_doctor": True}
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, expected_data)
+
+    def test_user_is_patient_can_login(self):
+        mommy.make(models.Patient, uuid=self.user.uid)
+        self.authenticate()
+        response = self.client.post(self.url)
+        expected_data = {"user_uuid": str(self.user.uid), "is_doctor": False}
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, expected_data)

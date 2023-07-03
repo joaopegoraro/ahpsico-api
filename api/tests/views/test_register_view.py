@@ -1,5 +1,6 @@
 from django.urls import reverse
 from model_mommy import mommy
+from rest_framework import exceptions as rest_exceptions
 from rest_framework import status
 
 from ... import exceptions, models
@@ -60,3 +61,13 @@ class RegisterUserTestCase(BaseViewTestCase):
         self.assertEqual(response.data, expected_data)
         saved_patient = models.Patient.objects.get(pk=patient.pk)
         self.assertEqual(saved_patient.pk, self.user.uid)
+
+    def test_request_mal_formatted_cant_signup(self):
+        doctor = mommy.prepare(models.Doctor, uuid=self.user.uid)
+        self.assertFalse(models.Doctor.objects.filter(pk=doctor.pk).exists())
+        self.authenticate()
+        request_data = {"name": doctor.name, "is_doctor": "this_should_be_a_boolean"}
+        response = self.client.post(self.url, request_data)
+        self.assertEqual(
+            response.status_code, rest_exceptions.ValidationError.status_code
+        )

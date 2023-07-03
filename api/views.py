@@ -58,19 +58,14 @@ class RegisterUser(APIView):
         request_serializer = serializers.SignUpRequestSerializer(data=request.data)
         request_serializer.is_valid(raise_exception=True)
 
-        try:
-            name = request_serializer.data["name"]
-            is_doctor = request_serializer.data["is_doctor"]
-            if is_doctor:
-                doctor = models.Doctor(pk=uid, name=name, phone_number=phone_number)
-                doctor.save()
-            else:
-                patient = models.Patient(pk=uid, name=name, phone_number=phone_number)
-                patient.save()
-        except Exception:
-            raise rest_exceptions.ParseError(
-                "Please, pass correct values to the 'name' and 'is_doctor' fields. 'name' should be a string and 'is_doctor' a boolean"
-            )
+        name = request_serializer.data["name"]
+        is_doctor = request_serializer.data["is_doctor"]
+        if is_doctor:
+            doctor = models.Doctor(pk=uid, name=name, phone_number=phone_number)
+            doctor.save()
+        else:
+            patient = models.Patient(pk=uid, name=name, phone_number=phone_number)
+            patient.save()
 
         response_serializer = serializers.SignUpResponseSerializer(
             data={"user_uuid": uid}
