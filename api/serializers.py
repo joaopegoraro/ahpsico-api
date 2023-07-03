@@ -28,13 +28,15 @@ class SimpleDoctorSerializer(serializers.ModelSerializer):
 
 
 class PatientSerializer(serializers.ModelSerializer):
+    doctors = serializers.PrimaryKeyRelatedField(
+        many=True,
+        read_only=True,
+        pk_field=serializers.UUIDField(format="hex_verbose"),
+    )
+
     class Meta:
         model = models.Patient
-        fields = [
-            "uuid",
-            "name",
-            "phone_number",
-        ]
+        fields = "__all__"
 
 
 class InviteSerializer(serializers.ModelSerializer):
@@ -72,10 +74,24 @@ class SessionSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class SimpleSessionSerializer(serializers.ModelSerializer):
+    date = serializers.DateTimeField(format=models.Session.DATE_FORMAT)
+
+    class Meta:
+        model = models.Session
+        fields = [
+            "id",
+            "date",
+        ]
+
+
 class AssignmentSerializer(serializers.ModelSerializer):
     doctor = SimpleDoctorSerializer()
-    patient = serializers.PrimaryKeyRelatedField(read_only=True)
-    delivery_session = serializers.SlugRelatedField(read_only=True, slug_field="date")
+    patient = serializers.PrimaryKeyRelatedField(
+        read_only=True,
+        pk_field=serializers.UUIDField(format="hex_verbose"),
+    )
+    delivery_session = SimpleSessionSerializer()
 
     class Meta:
         model = models.Assignment
