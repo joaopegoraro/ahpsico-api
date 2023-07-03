@@ -1,0 +1,5 @@
+Django==4.2.2
+djangorestframework==3.14.0
+firebase_admin==6.2.0
+model_mommy==2.0.0
+python-dotenv==1.0.0
