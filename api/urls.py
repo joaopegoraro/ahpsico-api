@@ -11,6 +11,7 @@ router.register(r"assignments", views.AssignmentViewSet, basename="assignments")
 router.register(r"advices", views.AdviceViewSet, basename="advices")
 router.register(r"invites", views.InviteViewSet, basename="invites")
 
+# print(router.get_urls())
 urlpatterns = [
     path("login", views.LoginUser.as_view(), name="login-user"),
     path("signup", views.RegisterUser.as_view(), name="register-user"),

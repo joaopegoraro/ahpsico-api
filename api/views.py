@@ -104,22 +104,26 @@ class InviteViewSet(
 
     def get_permissions(self):
         if self.action == "create":
-            return [permissions.IsDoctor]
+            return [permissions.IsDoctor()]
         return super().get_permissions()
 
     def create(self, request, *args, **kwargs):
         uid = request.user.uid
 
-        phone_number = request.data["phone_number"]
+        phone_number = request.data.get("phone_number")
         if not phone_number:
-            return rest_exceptions.bad_request()
+            return rest_exceptions.bad_request(request, None)
 
-        doctor = models.Doctor.objects.get(pk=uid)
-        if not doctor:
+        try:
+            doctor = models.Doctor.objects.get(pk=uid)
+        except models.Doctor.DoesNotExist:
             return rest_exceptions.PermissionDenied()
 
-        patient = models.Patient.objects.get(phone_number=phone_number)
-        if not patient:
+        try:
+            patient = models.Patient.objects.get(phone_number=phone_number)
+            if patient.doctors.filter(pk=doctor.pk).exists():
+                raise exceptions.PatientAlreadyWithDoctor()
+        except models.Patient.DoesNotExist:
             raise exceptions.PatientNotRegistered()
 
         invite = models.Invite(
@@ -129,7 +133,7 @@ class InviteViewSet(
         )
         invite.save()
 
-        return Response(status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_201_CREATED)
 
     @action(
         detail=True,

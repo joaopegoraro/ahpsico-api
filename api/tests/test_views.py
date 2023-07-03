@@ -6,6 +6,7 @@ from django.contrib.auth.models import User
 from django.test import RequestFactory, TestCase
 from django.urls import reverse
 from model_mommy import mommy
+from rest_framework import exceptions as rest_exceptions
 from rest_framework import status
 from rest_framework.test import APITestCase
 
@@ -97,3 +98,121 @@ class RegisterUserTestCase(BaseViewTestCase):
         self.assertEqual(response.data, expected_data)
         saved_patient = models.Patient.objects.get(pk=patient.pk)
         self.assertEqual(saved_patient.pk, self.user.uid)
+
+
+class InviteUserTestCase(BaseViewTestCase):
+    list_url = reverse("invites-list")
+
+    def accept_url(self, pk):
+        return reverse("invites-accept", kwargs={"pk": pk})
+
+    def test_unauthenticated_user_cant_invite(self):
+        response = self.client.post(self.list_url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_malformed_request_cant_create_invite(self):
+        self.authenticate()
+        mommy.make(models.Doctor, uuid=self.user.uid)
+        phone_number = "1234"
+        request_data = {"some_other_thing_that_is_not_phone_number": phone_number}
+        response = self.client.post(self.list_url, request_data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_user_is_not_doctor_cant_create_invite(self):
+        self.authenticate()
+        mommy.make(models.Patient, uuid=self.user.uid)
+        phone_number = "1234"
+        request_data = {"phone_number": phone_number}
+        response = self.client.post(self.list_url, request_data)
+        self.assertEqual(
+            response.status_code, rest_exceptions.PermissionDenied.status_code
+        )
+        self.assertEqual(
+            response.data["detail"].code, rest_exceptions.PermissionDenied.default_code
+        )
+
+    def test_phone_number_not_tied_to_any_patient_cant_create_invite(self):
+        self.authenticate()
+        mommy.make(models.Doctor, uuid=self.user.uid)
+        phone_number = "1234"
+        request_data = {"phone_number": phone_number}
+        response = self.client.post(self.list_url, request_data)
+        self.assertEqual(
+            response.status_code, exceptions.PatientNotRegistered.status_code
+        )
+        self.assertEqual(
+            response.data["detail"].code, exceptions.PatientNotRegistered.default_code
+        )
+
+    def test_user_doctor_with_correct_request_creates_invite(self):
+        self.authenticate()
+        mommy.make(models.Doctor, uuid=self.user.uid)
+        phone_number = "1234"
+        mommy.make(models.Patient, phone_number=phone_number)
+        request_data = {"phone_number": phone_number}
+        response = self.client.post(self.list_url, request_data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_user_doctor_with_request_to_own_patient_cant_create_invite(self):
+        self.authenticate()
+        phone_number = "1234"
+        request_data = {"phone_number": phone_number}
+        doctor = mommy.make(models.Doctor, uuid=self.user.uid)
+        patient = mommy.make(models.Patient, phone_number=phone_number)
+        patient.doctors.add(doctor)
+        response = self.client.post(self.list_url, request_data)
+        self.assertEqual(
+            response.status_code, exceptions.PatientAlreadyWithDoctor.status_code
+        )
+        self.assertEqual(
+            response.data["detail"].code,
+            exceptions.PatientAlreadyWithDoctor.default_code,
+        )
+
+    def test_user_doctor_with_correct_request_creates_invite(self):
+        self.authenticate()
+        mommy.make(models.Doctor, uuid=self.user.uid)
+        phone_number = "1234"
+        mommy.make(models.Patient, phone_number=phone_number)
+        self.assertFalse(
+            models.Invite.objects.filter(phone_number=phone_number).exists()
+        )
+        request_data = {"phone_number": phone_number}
+        response = self.client.post(self.list_url, request_data)
+        self.assertTrue(
+            models.Invite.objects.filter(phone_number=phone_number).exists()
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_user_not_the_invite_patient_cant_accept_invite(self):
+        self.authenticate()
+        mommy.make(models.Patient, uuid=self.user.uid)
+        doctor = mommy.make(models.Doctor)
+        phone_number = "1234"
+        patient = mommy.make(models.Patient, phone_number=phone_number)
+        invite = mommy.prepare(models.Invite, phone_number=phone_number)
+        invite.doctor = doctor
+        invite.patient = patient
+        invite.save()
+        self.assertTrue(models.Invite.objects.filter(pk=invite.pk).exists())
+        request_data = {"phone_number": phone_number}
+        response = self.client.post(self.accept_url(invite.id), request_data)
+        self.assertTrue(models.Invite.objects.filter(pk=invite.pk).exists())
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_user_invite_patient_can_accept_invite(self):
+        self.authenticate()
+        doctor = mommy.make(models.Doctor)
+        phone_number = "1234"
+        patient = mommy.make(
+            models.Patient, phone_number=phone_number, uuid=self.user.uid
+        )
+        invite = mommy.prepare(models.Invite, phone_number=phone_number)
+        invite.doctor = doctor
+        invite.patient = patient
+        invite.save()
+        self.assertTrue(models.Invite.objects.filter(pk=invite.pk).exists())
+        request_data = {"phone_number": phone_number}
+        response = self.client.post(self.accept_url(invite.id), request_data)
+        self.assertFalse(models.Invite.objects.filter(pk=invite.pk).exists())
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
