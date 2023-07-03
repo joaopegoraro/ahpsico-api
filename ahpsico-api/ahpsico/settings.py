@@ -30,9 +30,9 @@ USE_TZ = True
 SECRET_KEY = os.environ.get("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = str(os.environ.get("DEBUG")) == "1"
+DEBUG = int(os.environ.get("DEBUG", default=0))
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS").split(" ")
 
 
 # Application definition
@@ -47,7 +47,6 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     # 3rd party
     "rest_framework",
-    "drf_spectacular",
     # local
     "api.apps.ApiConfig",
 ]
@@ -64,6 +63,8 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = "ahpsico.urls"
+
+AUTHENTICATION_BACKENDS = []
 
 TEMPLATES = [
     {
@@ -137,8 +138,12 @@ STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 REST_FRAMEWORK = {
-    "DEFAULT_AUTHENTICATION_CLASSES": [],
-    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    'DEFAULT_PERMISSION_CLASSES': [
+        'api.permissions.HasToken',
+    ],
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        'api.authentication.FirebaseAuthentication',
+    ],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 10,
 }

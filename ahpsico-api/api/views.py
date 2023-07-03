@@ -1,15 +1,14 @@
 import json
 
-from django.http import JsonResponse
 from django.utils.timezone import datetime
 from rest_framework import exceptions as rest_exceptions
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
-from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from . import authentication, enums, exceptions, models, permissions, serializers
+from . import (authentication, enums, exceptions, models, permissions,
+               serializers)
 
 
 class LoginUser(APIView):
@@ -20,6 +19,7 @@ class LoginUser(APIView):
     """
 
     authentication_classes = [authentication.FirebaseAuthentication]
+    permission_classes = [permissions.HasToken]
 
     def post(self, request, format=None):
         uid = request.user.uid
@@ -45,6 +45,7 @@ class RegisterUser(APIView):
     """
 
     authentication_classes = [authentication.FirebaseAuthentication]
+    permission_classes = [permissions.HasToken]
 
     def post(self, request, format=None):
         uid = request.user.uid
@@ -88,14 +89,14 @@ class InviteViewSet(
     """
 
     authentication_classes = [authentication.FirebaseAuthentication]
-    permission_classes = [permissions.HasInviteInformation]
+    permission_classes = [permissions.HasToken, permissions.HasInviteInformation]
 
     serializer_class = serializers.InviteSerializer
     queryset = models.Invite.objects.all()
 
     def get_permissions(self):
         if self.action == "create":
-            return [permissions.IsDoctor()]
+            return [permissions.HasToken(), permissions.IsDoctor()]
         return super().get_permissions()
 
     def create(self, request, *args, **kwargs):
@@ -129,7 +130,7 @@ class InviteViewSet(
     @action(
         detail=True,
         methods=["POST"],
-        permission_classes=[permissions.IsInviteOwner],
+        permission_classes=[permissions.HasToken, permissions.IsInviteOwner],
     )
     def accept(self, request, *args, **kwargs):
         invite = self.get_object()
@@ -151,12 +152,12 @@ class DoctorViewSet(
     """
 
     authentication_classes = [authentication.FirebaseAuthentication]
-    permission_classes = [permissions.IsOwner]
+    permission_classes = [permissions.HasToken, permissions.IsOwner]
 
     serializer_class = serializers.DoctorSerializer
     queryset = models.Doctor.objects.all()
 
-    @action(detail=True, permission_classes=[permissions.IsOwner])
+    @action(detail=True, permission_classes=[permissions.HasToken, permissions.IsOwner])
     def patients(self, request, *args, **kwargs):
         uid = request.user.uid
 
@@ -165,7 +166,7 @@ class DoctorViewSet(
 
         return Response(json.dumps(serializer.data), status=status.HTTP_200_OK)
 
-    @action(detail=True, permission_classes=[permissions.IsOwner])
+    @action(detail=True, permission_classes=[permissions.HasToken, permissions.IsOwner])
     def sessions(self, request, *args, **kwargs):
         uid = request.user.uid
         datestr = request.query_params.get("date")
@@ -189,7 +190,7 @@ class DoctorViewSet(
 
         return Response(json.dumps(serializer.data), status=status.HTTP_200_OK)
 
-    @action(detail=True, permission_classes=[permissions.IsOwner])
+    @action(detail=True, permission_classes=[permissions.HasToken, permissions.IsOwner])
     def advices(self, request, *args, **kwargs):
         uid = request.user.uid
 
@@ -211,18 +212,19 @@ class PatientViewSet(
     """
 
     authentication_classes = [authentication.FirebaseAuthentication]
+    permission_classes = [permissions.HasToken]
 
     serializer_class = serializers.PatientSerializer
     queryset = models.Patient.objects.all()
 
     def get_permissions(self):
         if self.action == "retrieve":
-            return [permissions.HasPatientInformation()]
+            return [permissions.HasToken(), permissions.HasPatientInformation()]
         elif self.action == "update":
-            return [permissions.IsOwner()]
+            return [permissions.HasToken(), permissions.IsOwner()]
         return super().get_permissions()
 
-    @action(detail=True, permission_classes=[permissions.HasPatientInformation])
+    @action(detail=True, permission_classes=[permissions.HasToken, permissions.HasPatientInformation])
     def sessions(self, request, *args, **kwargs):
         uid = request.user.uid
         pk = kwargs["pk"]
@@ -246,7 +248,7 @@ class PatientViewSet(
 
         return Response(json.dumps(serializer.data), status=status.HTTP_200_OK)
 
-    @action(detail=True, permission_classes=[permissions.HasPatientInformation])
+    @action(detail=True, permission_classes=[permissions.HasToken, permissions.HasPatientInformation])
     def assignments(self, request, *args, **kwargs):
         uid = request.user.uid
         pk = kwargs["pk"]
@@ -274,7 +276,7 @@ class PatientViewSet(
 
         return Response(json.dumps(serializer.data), status=status.HTTP_200_OK)
 
-    @action(detail=True, permission_classes=[permissions.HasPatientInformation])
+    @action(detail=True, permission_classes=[permissions.HasToken, permissions.HasPatientInformation])
     def advices(self, request, *args, **kwargs):
         uid = request.user.uid
         pk = kwargs["pk"]
@@ -303,7 +305,7 @@ class SessionViewSet(
     """
 
     authentication_classes = [authentication.FirebaseAuthentication]
-    permission_classes = [permissions.HasSessionInformation]
+    permission_classes = [permissions.HasToken, permissions.HasSessionInformation]
 
     serializer_class = serializers.SessionSerializer
     queryset = models.Session.objects.all()
@@ -323,7 +325,7 @@ class AssignmentViewSet(
     """
 
     authentication_classes = [authentication.FirebaseAuthentication]
-    permission_classes = [permissions.HasAssignmentInformation]
+    permission_classes = [permissions.HasToken, permissions.HasAssignmentInformation]
 
     serializer_class = serializers.AssignmentSerializer
     queryset = models.Assignment.objects.all()
@@ -343,7 +345,7 @@ class AdviceViewSet(
     """
 
     authentication_classes = [authentication.FirebaseAuthentication]
-    permission_classes = [permissions.IsAdviceOwner]
+    permission_classes = [permissions.HasToken, permissions.IsAdviceOwner]
 
     serializer_class = serializers.AdviceSerializer
     queryset = models.Advice.objects.all()

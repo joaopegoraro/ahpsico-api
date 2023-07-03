@@ -3,6 +3,20 @@ from rest_framework import permissions
 from . import models
 
 
+class HasToken(permissions.BasePermission):
+    """
+    Custom permission to only allow owners of an object to edit it.
+    """
+
+    def has_permission(self, request, view):
+        try:
+            uid = request.user.uid
+            if not uid:
+                return False
+            return True
+        except Exception:
+            return False
+
 class IsOwner(permissions.BasePermission):
     """
     Custom permission to only allow owners of an object to edit it.
