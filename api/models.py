@@ -6,7 +6,7 @@ from . import enums
 class Doctor(models.Model):
     uuid = models.UUIDField(primary_key=True)
     name = models.CharField(max_length=200)
-    phone_number = models.CharField(max_length=200, unique=True, blank=True, default="")
+    phone_number = models.CharField(max_length=200, unique=True)
     description = models.CharField(max_length=200, blank=True, default="")
     crp = models.CharField(max_length=200, blank=True, default="")
     pix_key = models.CharField(max_length=200, blank=True, default="")
@@ -19,7 +19,7 @@ class Doctor(models.Model):
 class Patient(models.Model):
     uuid = models.UUIDField(primary_key=True)
     name = models.CharField(max_length=200)
-    phone_number = models.CharField(max_length=200, unique=True, blank=True, default="")
+    phone_number = models.CharField(max_length=200, unique=True)
     doctors = models.ManyToManyField(Doctor)
 
     def __str__(self):
@@ -55,8 +55,8 @@ class SessionGroup(models.Model):
 class Session(models.Model):
     doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE)
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
-    group_id = models.ForeignKey(SessionGroup, on_delete=models.CASCADE)
-    group_index = models.IntegerField()
+    group_id = models.ForeignKey(SessionGroup, on_delete=models.CASCADE, null=True)
+    group_index = models.IntegerField(null=True)
     status = models.CharField(
         max_length=200,
         choices=enums.SessionStatus.choices(),
@@ -67,7 +67,9 @@ class Session(models.Model):
         choices=enums.SessionType.choices(),
         default=enums.SessionType.INDIVIDUAL,
     )
-    date = models.DateField()
+    date = models.DateTimeField()
+
+    DATE_FORMAT = "%Y-%m-%dT%H:%M:%S%z"
 
     def __str__(self):
         return f"Doctor: {self.doctor} - Patient: ${self.patient}"

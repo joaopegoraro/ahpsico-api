@@ -39,7 +39,10 @@ class PatientSerializer(serializers.ModelSerializer):
 
 class InviteSerializer(serializers.ModelSerializer):
     doctor = SimpleDoctorSerializer()
-    patient = serializers.PrimaryKeyRelatedField(read_only=True)
+    patient = serializers.PrimaryKeyRelatedField(
+        read_only=True,
+        pk_field=serializers.UUIDField(format="hex_verbose"),
+    )
 
     class Meta:
         model = models.Invite
@@ -48,7 +51,11 @@ class InviteSerializer(serializers.ModelSerializer):
 
 class AdviceSerializer(serializers.ModelSerializer):
     doctor = SimpleDoctorSerializer()
-    patients = serializers.PrimaryKeyRelatedField(read_only=True, many=True)
+    patients = serializers.PrimaryKeyRelatedField(
+        many=True,
+        read_only=True,
+        pk_field=serializers.UUIDField(format="hex_verbose"),
+    )
 
     class Meta:
         model = models.Advice
@@ -57,6 +64,8 @@ class AdviceSerializer(serializers.ModelSerializer):
 
 class SessionSerializer(serializers.ModelSerializer):
     doctor = SimpleDoctorSerializer()
+    patient = PatientSerializer()
+    date = serializers.DateTimeField(format=models.Session.DATE_FORMAT)
 
     class Meta:
         model = models.Session

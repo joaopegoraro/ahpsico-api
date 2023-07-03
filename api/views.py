@@ -1,13 +1,10 @@
-import io
+import json
 
 from django.http import JsonResponse
-from django.utils.dateparse import parse_datetime
 from django.utils.timezone import datetime
-from drf_spectacular.utils import extend_schema
 from rest_framework import exceptions as rest_exceptions
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
-from rest_framework.parsers import JSONParser
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -49,12 +46,9 @@ class RegisterUser(APIView):
 
     authentication_classes = [authentication.FirebaseAuthentication]
 
-    @extend_schema(
-        request=serializers.SignUpRequestSerializer,
-        responses=serializers.SignUpResponseSerializer,
-    )
     def post(self, request, format=None):
         uid = request.user.uid
+        phone_number = request.user.phone_number
 
         user_is_doctor = models.Doctor.objects.filter(pk=uid).exists()
         user_is_patient = models.Patient.objects.filter(pk=uid).exists()
@@ -68,13 +62,15 @@ class RegisterUser(APIView):
             name = request_serializer.data["name"]
             is_doctor = request_serializer.data["is_doctor"]
             if is_doctor:
-                doctor = models.Doctor(pk=uid, name=name)
+                doctor = models.Doctor(pk=uid, name=name, phone_number=phone_number)
                 doctor.save()
             else:
-                patient = models.Patient(pk=uid, name=name)
+                patient = models.Patient(pk=uid, name=name, phone_number=phone_number)
                 patient.save()
         except Exception:
-            raise rest_exceptions.ParseError()
+            raise rest_exceptions.ParseError(
+                "Please, pass correct values to the 'name' and 'is_doctor' fields. 'name' should be a string and 'is_doctor' a boolean"
+            )
 
         response_serializer = serializers.SignUpResponseSerializer(
             data={"user_uuid": uid}
@@ -166,59 +162,46 @@ class DoctorViewSet(
     queryset = models.Doctor.objects.all()
 
     @action(detail=True, permission_classes=[permissions.IsOwner])
-    @extend_schema(
-        request=None,
-        responses=serializers.PatientSerializer,
-    )
     def patients(self, request, *args, **kwargs):
         uid = request.user.uid
 
-        patients = models.Patient.objects.filter(doctors__id=uid)
+        patients = models.Patient.objects.filter(doctors__pk=uid)
         serializer = serializers.PatientSerializer(patients, many=True)
-        serializer.is_valid(raise_exception=True)
 
-        json = JSONRenderer().render(serializer.data)
-        return JsonResponse(json)
+        return Response(json.dumps(serializer.data), status=status.HTTP_200_OK)
 
     @action(detail=True, permission_classes=[permissions.IsOwner])
-    @extend_schema(
-        request=None,
-        responses=serializers.SessionSerializer,
-    )
     def sessions(self, request, *args, **kwargs):
         uid = request.user.uid
         datestr = request.query_params.get("date")
         if not datestr:
-            sessions = models.Session.objects.filter(doctor__id=uid)
+            sessions = models.Session.objects.filter(doctor__pk=uid)
         else:
-            date = parse_datetime(datestr)
-            sessions = models.Session.objects.filter(
-                doctor__id=uid,
-                date__year=date.year,
-                date__month=date.month,
-                date__day=date.day,
-            )
+            try:
+                date = datetime.strptime(datestr, models.Session.DATE_FORMAT)
+                sessions = models.Session.objects.filter(
+                    doctor__pk=uid,
+                    date__year=date.year,
+                    date__month=date.month,
+                    date__day=date.day,
+                )
+            except Exception:
+                raise rest_exceptions.ParseError(
+                    "Date not in the correct format. Please use the 'YYYY-mm-ddTHH:MM:SSZ' format"
+                )
 
         serializer = serializers.SessionSerializer(sessions, many=True)
-        serializer.is_valid(raise_exception=True)
 
-        json = JSONRenderer().render(serializer.data)
-        return JsonResponse(json)
+        return Response(json.dumps(serializer.data), status=status.HTTP_200_OK)
 
     @action(detail=True, permission_classes=[permissions.IsOwner])
-    @extend_schema(
-        request=None,
-        responses=serializers.AdviceSerializer,
-    )
     def advices(self, request, *args, **kwargs):
         uid = request.user.uid
 
-        advices = models.Advice.objects.filter(doctor__id=uid)
+        advices = models.Advice.objects.filter(doctor__pk=uid)
         serializer = serializers.AdviceSerializer(advices, many=True)
-        serializer.is_valid(raise_exception=True)
 
-        json = JSONRenderer().render(serializer.data)
-        return JsonResponse(json)
+        return Response(json.dumps(serializer.data), status=status.HTTP_200_OK)
 
 
 class PatientViewSet(
@@ -245,10 +228,6 @@ class PatientViewSet(
         return super().get_permissions()
 
     @action(detail=True, permission_classes=[permissions.HasPatientInformation])
-    @extend_schema(
-        request=None,
-        responses=serializers.SessionSerializer,
-    )
     def sessions(self, request, *args, **kwargs):
         uid = request.user.uid
         pk = kwargs["pk"]
@@ -275,10 +254,6 @@ class PatientViewSet(
         return JsonResponse(json)
 
     @action(detail=True, permission_classes=[permissions.HasPatientInformation])
-    @extend_schema(
-        request=None,
-        responses=serializers.AssignmentSerializer,
-    )
     def assignments(self, request, *args, **kwargs):
         uid = request.user.uid
         pk = kwargs["pk"]
@@ -307,10 +282,6 @@ class PatientViewSet(
         return JsonResponse(json)
 
     @action(detail=True, permission_classes=[permissions.HasPatientInformation])
-    @extend_schema(
-        request=None,
-        responses=serializers.AdviceSerializer,
-    )
     def advices(self, request, *args, **kwargs):
         uid = request.user.uid
         pk = kwargs["pk"]

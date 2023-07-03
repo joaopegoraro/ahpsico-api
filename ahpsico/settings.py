@@ -15,13 +15,13 @@ from pathlib import Path
 
 from api.authentication import FirebaseAuthentication
 
-
 # Connect the path with your '.env' file name
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+USE_TZ = True
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
