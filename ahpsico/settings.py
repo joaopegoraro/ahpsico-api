@@ -134,11 +134,11 @@ STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 REST_FRAMEWORK = {
-    'DEFAULT_PERMISSION_CLASSES': [
-        'api.permissions.HasToken',
+    "DEFAULT_PERMISSION_CLASSES": [
+        "api.permissions.HasToken",
     ],
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        'api.authentication.FirebaseAuthentication',
+        "api.authentication.FirebaseAuthentication",
     ],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 10,
