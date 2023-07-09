@@ -12,7 +12,7 @@ from . import authentication, enums, exceptions, models, permissions, serializer
 
 class LoginUser(APIView):
     """
-    View to validate firebase token and return the user's uuid and type
+    View to validate firebase token and return the user's information
 
     * Requires token authentication.
     """
@@ -23,14 +23,26 @@ class LoginUser(APIView):
     def post(self, request, format=None):
         uid = request.user.uid
 
-        if models.Doctor.objects.filter(pk=uid).exists():
+        try:
+            doctor = models.Doctor.objects.get(pk=uid)
             is_doctor = True
-        elif models.Patient.objects.filter(pk=uid).exists():
-            is_doctor = False
-        else:
-            raise exceptions.SignUpRequired()
+            phone_number = doctor.phone_number
+            name = doctor.name
+        except:
+            try:
+                patient = models.Patient.objects.get(pk=uid)
+                is_doctor = False
+                phone_number = patient.phone_number
+                name = patient.name
+            except:
+                raise exceptions.SignUpRequired()
 
-        data = {"user_uuid": str(uid), "is_doctor": is_doctor}
+        data = {
+            "user_uuid": str(uid),
+            "user_name": name,
+            "phone_number": phone_number,
+            "is_doctor": is_doctor,
+        }
         return Response(data, status=200)
 
 
