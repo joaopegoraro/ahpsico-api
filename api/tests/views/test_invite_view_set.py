@@ -118,14 +118,24 @@ class InviteViewSetTestCase(BaseViewTestCase):
 
     def test_user_doctor_with_correct_request_creates_invite(self):
         self.authenticate()
-        mommy.make(models.Doctor, uuid=self.user.uid)
+        doctor = mommy.make(models.Doctor, uuid=self.user.uid)
         phone_number = "1234"
-        mommy.make(models.Patient, phone_number=phone_number)
+        patient = mommy.make(models.Patient, phone_number=phone_number)
         self.assertFalse(
             models.Invite.objects.filter(phone_number=phone_number).exists()
         )
         request_data = {"phone_number": phone_number}
         response = self.client.post(self.list_url, request_data)
+        expected_data = {
+            "id": 1,
+            "doctor": {
+                "uuid": str(doctor.pk),
+                "name": doctor.name,
+            },
+            "patient": str(patient.pk),
+            "phone_number": phone_number,
+        }
+        self.assertEqual(response.data, json.dumps(expected_data))
         self.assertTrue(
             models.Invite.objects.filter(phone_number=phone_number).exists()
         )

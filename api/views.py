@@ -5,6 +5,7 @@ from rest_framework import exceptions as rest_exceptions
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.parsers import JSONParser
 from rest_framework.views import APIView
 
 from . import authentication, enums, exceptions, models, permissions, serializers
@@ -140,8 +141,10 @@ class InviteViewSet(
             patient=patient,
         )
         invite.save()
-
-        return Response(status=status.HTTP_201_CREATED)
+        invite_serializer = serializers.InviteSerializer(invite)
+        return Response(
+            json.dumps(invite_serializer.data), status=status.HTTP_201_CREATED
+        )
 
     @action(
         detail=True,
