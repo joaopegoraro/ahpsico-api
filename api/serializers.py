@@ -31,15 +31,13 @@ class SimpleDoctorSerializer(serializers.ModelSerializer):
 
 
 class PatientSerializer(serializers.ModelSerializer):
-    doctors = serializers.PrimaryKeyRelatedField(
-        many=True,
-        read_only=True,
-        pk_field=serializers.UUIDField(format="hex_verbose"),
-    )
-
     class Meta:
         model = models.Patient
-        fields = "__all__"
+        fields = [
+            "uuid",
+            "name",
+            "phone_number",
+        ]
 
 
 class InviteSerializer(serializers.ModelSerializer):

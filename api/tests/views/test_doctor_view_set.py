@@ -70,7 +70,6 @@ class DoctorViewSetTestCase(BaseViewTestCase):
             patients_list.append(
                 {
                     "uuid": str(patient.pk),
-                    "doctors": [str(doctor.pk)],
                     "name": patient.name,
                     "phone_number": patient.phone_number,
                 }
@@ -133,7 +132,6 @@ class DoctorViewSetTestCase(BaseViewTestCase):
                     },
                     "patient": {
                         "uuid": str(patient.pk),
-                        "doctors": [str(doctor.pk)],
                         "name": patient.name,
                         "phone_number": patient.phone_number,
                     },
@@ -226,7 +224,6 @@ class DoctorViewSetTestCase(BaseViewTestCase):
                     },
                     "patient": {
                         "uuid": str(patient.pk),
-                        "doctors": [str(doctor.pk)],
                         "name": patient.name,
                         "phone_number": patient.phone_number,
                     },
