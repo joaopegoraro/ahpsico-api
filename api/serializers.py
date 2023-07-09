@@ -10,6 +10,9 @@ class SignUpRequestSerializer(serializers.Serializer):
 
 class SignUpResponseSerializer(serializers.Serializer):
     user_uuid = serializers.UUIDField()
+    user_name = serializers.CharField(max_length=200)
+    phone_number = serializers.CharField(max_length=200)
+    is_doctor = serializers.BooleanField()
 
 
 class DoctorSerializer(serializers.ModelSerializer):

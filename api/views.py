@@ -80,7 +80,12 @@ class RegisterUser(APIView):
             patient.save()
 
         response_serializer = serializers.SignUpResponseSerializer(
-            data={"user_uuid": uid}
+            data={
+                "user_uuid": str(uid),
+                "user_name": name,
+                "phone_number": phone_number,
+                "is_doctor": is_doctor,
+            }
         )
         response_serializer.is_valid(raise_exception=True)
 

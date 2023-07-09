@@ -44,7 +44,12 @@ class RegisterUserTestCase(BaseViewTestCase):
         self.authenticate()
         request_data = {"name": doctor.name, "is_doctor": True}
         response = self.client.post(self.url, request_data)
-        expected_data = {"user_uuid": str(self.user.uid)}
+        expected_data = {
+            "user_uuid": str(self.user.uid),
+            "user_name": doctor.name,
+            "phone_number": self.user.phone_number,
+            "is_doctor": True,
+        }
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, expected_data)
         saved_doctor = models.Doctor.objects.get(pk=doctor.pk)
@@ -56,7 +61,12 @@ class RegisterUserTestCase(BaseViewTestCase):
         self.authenticate()
         request_data = {"name": patient.name, "is_doctor": False}
         response = self.client.post(self.url, request_data)
-        expected_data = {"user_uuid": str(self.user.uid)}
+        expected_data = {
+            "user_uuid": str(self.user.uid),
+            "user_name": patient.name,
+            "phone_number": self.user.phone_number,
+            "is_doctor": False,
+        }
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, expected_data)
         saved_patient = models.Patient.objects.get(pk=patient.pk)
