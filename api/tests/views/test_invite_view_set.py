@@ -72,6 +72,7 @@ class InviteViewSetTestCase(BaseViewTestCase):
             "doctor": {
                 "uuid": str(doctor.pk),
                 "name": doctor.name,
+                "description": doctor.description,
             },
             "patient": str(patient.pk),
             "phone_number": patient.phone_number,
@@ -131,6 +132,7 @@ class InviteViewSetTestCase(BaseViewTestCase):
             "doctor": {
                 "uuid": str(doctor.pk),
                 "name": doctor.name,
+                "description": doctor.description,
             },
             "patient": str(patient.pk),
             "phone_number": phone_number,

@@ -27,6 +27,7 @@ class SimpleDoctorSerializer(serializers.ModelSerializer):
         fields = [
             "uuid",
             "name",
+            "description",
         ]
 
 

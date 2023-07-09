@@ -129,6 +129,7 @@ class DoctorViewSetTestCase(BaseViewTestCase):
                     "doctor": {
                         "uuid": str(doctor.pk),
                         "name": doctor.name,
+                        "description": doctor.description,
                     },
                     "patient": {
                         "uuid": str(patient.pk),
@@ -221,6 +222,7 @@ class DoctorViewSetTestCase(BaseViewTestCase):
                     "doctor": {
                         "uuid": str(doctor.pk),
                         "name": doctor.name,
+                        "description": doctor.description,
                     },
                     "patient": {
                         "uuid": str(patient.pk),
@@ -288,6 +290,7 @@ class DoctorViewSetTestCase(BaseViewTestCase):
                     "doctor": {
                         "uuid": str(doctor.pk),
                         "name": doctor.name,
+                        "description": doctor.description,
                     },
                     "patients": sorted([*map(lambda p: str(p.pk), patients)]),
                     "message": advice.message,

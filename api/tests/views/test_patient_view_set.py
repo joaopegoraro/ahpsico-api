@@ -1,4 +1,5 @@
 import json
+import uuid
 
 from django.urls import reverse
 from django.utils.timezone import datetime, timedelta, timezone
@@ -13,9 +14,16 @@ from .base_view_test_case import BaseViewTestCase
 class PatientViewSetTestCase(BaseViewTestCase):
     list_url = "patients-list"
     detail_url = "patients-detail"
+    doctors_url = "patients-doctors"
     assignments_url = "patients-assignments"
     sessions_url = "patients-sessions"
     advices_url = "patients-advices"
+
+    def test_user_not_authenticated_cant_list_doctors(self):
+        patient = mommy.make(models.Patient, uuid=self.user.uid)
+        url = reverse(self.doctors_url, kwargs={"pk": str(patient.pk)})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_user_not_authenticated_cant_list_sessions(self):
         patient = mommy.make(models.Patient, uuid=self.user.uid)
@@ -103,6 +111,52 @@ class PatientViewSetTestCase(BaseViewTestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(json.dumps(response.data), json.dumps(expected_data))
 
+    def test_user_has_uid_different_to_passed_pk_cant_list_doctors(self):
+        self.authenticate()
+        patient = mommy.make(models.Patient, uuid=self.user.uid)
+        doctors = mommy.make(
+            models.Doctor, _quantity=2, _fill_optional=["phone_number"]
+        )
+        for doctor in doctors:
+            patient.doctors.add(doctor)
+        self.assertEqual(
+            models.Patient.objects.get(pk=self.user.uid).doctors.all().count(), 2
+        )
+        response = self.client.get(
+            reverse(self.doctors_url, kwargs={"pk": str(uuid.uuid4())})
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_user_has_uid_equal_to_passed_pk_can_list_patients(self):
+        self.authenticate()
+        patient = mommy.make(models.Patient, uuid=self.user.uid)
+        doctors = mommy.make(
+            models.Doctor, _quantity=2, _fill_optional=["phone_number"]
+        )
+        for doctor in doctors:
+            patient.doctors.add(doctor)
+        self.assertEqual(
+            models.Patient.objects.get(pk=self.user.uid).doctors.all().count(), 2
+        )
+        response = self.client.get(
+            reverse(self.doctors_url, kwargs={"pk": str(patient.pk)})
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        doctors_list = []
+        for doctor in sorted(
+            doctors,
+            key=lambda x: x.uuid,
+        ):
+            doctors_list.append(
+                {
+                    "uuid": str(doctor.pk),
+                    "name": doctor.name,
+                    "description": doctor.description,
+                }
+            )
+        expected_data = json.dumps(doctors_list)
+        self.assertEqual(response.data, expected_data)
+
     def test_user_has_no_patient_information_cant_list_sessions(self):
         self.authenticate()
         doctor = mommy.make(models.Doctor)
@@ -168,6 +222,7 @@ class PatientViewSetTestCase(BaseViewTestCase):
                     "doctor": {
                         "uuid": str(doctor.pk),
                         "name": doctor.name,
+                        "description": doctor.description,
                     },
                     "patient": {
                         "uuid": str(patient.pk),
@@ -231,6 +286,7 @@ class PatientViewSetTestCase(BaseViewTestCase):
                     "doctor": {
                         "uuid": str(doctor.pk),
                         "name": doctor.name,
+                        "description": doctor.description,
                     },
                     "patient": {
                         "uuid": str(patient.pk),
@@ -295,6 +351,7 @@ class PatientViewSetTestCase(BaseViewTestCase):
                     "doctor": {
                         "uuid": str(doctor.pk),
                         "name": doctor.name,
+                        "description": doctor.description,
                     },
                     "patient": {
                         "uuid": str(patient.pk),
@@ -355,6 +412,7 @@ class PatientViewSetTestCase(BaseViewTestCase):
                     "doctor": {
                         "uuid": str(doctor.pk),
                         "name": doctor.name,
+                        "description": doctor.description,
                     },
                     "patient": {
                         "uuid": str(patient.pk),
@@ -440,6 +498,7 @@ class PatientViewSetTestCase(BaseViewTestCase):
                     "doctor": {
                         "uuid": str(doctor.pk),
                         "name": doctor.name,
+                        "description": doctor.description,
                     },
                     "patient": str(patient.pk),
                     "delivery_session": {
@@ -508,6 +567,7 @@ class PatientViewSetTestCase(BaseViewTestCase):
                     "doctor": {
                         "uuid": str(doctor.pk),
                         "name": doctor.name,
+                        "description": doctor.description,
                     },
                     "patient": str(patient.pk),
                     "delivery_session": {
@@ -572,6 +632,7 @@ class PatientViewSetTestCase(BaseViewTestCase):
                     "doctor": {
                         "uuid": str(ass.doctor.pk),
                         "name": ass.doctor.name,
+                        "description": ass.doctor.description,
                     },
                     "patient": str(ass.patient.pk),
                     "delivery_session": {
@@ -640,6 +701,7 @@ class PatientViewSetTestCase(BaseViewTestCase):
                     "doctor": {
                         "uuid": str(ass.doctor.pk),
                         "name": ass.doctor.name,
+                        "description": ass.doctor.description,
                     },
                     "patient": str(ass.patient.pk),
                     "delivery_session": {
@@ -702,6 +764,7 @@ class PatientViewSetTestCase(BaseViewTestCase):
                     "doctor": {
                         "uuid": str(advice.doctor.pk),
                         "name": advice.doctor.name,
+                        "description": advice.doctor.description,
                     },
                     "patients": [str(patient.pk)],
                     "message": advice.message,
@@ -742,6 +805,7 @@ class PatientViewSetTestCase(BaseViewTestCase):
                     "doctor": {
                         "uuid": str(advice.doctor.pk),
                         "name": advice.doctor.name,
+                        "description": advice.doctor.description,
                     },
                     "patients": [str(patient.pk)],
                     "message": advice.message,

@@ -35,6 +35,7 @@ class AdviceViewSetTestCase(BaseViewTestCase):
             "doctor": {
                 "uuid": str(advice.doctor.pk),
                 "name": advice.doctor.name,
+                "description": doctor.description,
             },
             "patients": [str(patient.pk)],
             "message": advice.message,

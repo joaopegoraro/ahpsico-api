@@ -243,6 +243,16 @@ class PatientViewSet(
             return [permissions.IsOwner()]
         return super().get_permissions()
 
+    @action(detail=True, permission_classes=[permissions.HasToken, permissions.IsOwner])
+    def doctors(self, request, *args, **kwargs):
+        uid = request.user.uid
+
+        patient = models.Patient.objects.get(pk=uid)
+        doctors = patient.doctors.all()
+        serializer = serializers.SimpleDoctorSerializer(doctors, many=True)
+
+        return Response(json.dumps(serializer.data), status=status.HTTP_200_OK)
+
     @action(
         detail=True,
         permission_classes=[permissions.HasToken, permissions.HasPatientInformation],
