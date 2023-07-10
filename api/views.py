@@ -181,7 +181,7 @@ class DoctorViewSet(
         uid = request.user.uid
 
         patients = models.Patient.objects.filter(doctors__pk=uid)
-        serializer = serializers.PatientSerializer(patients, many=True)
+        serializer = serializers.SimplePatientSerializer(patients, many=True)
 
         return Response(json.dumps(serializer.data), status=status.HTTP_200_OK)
 

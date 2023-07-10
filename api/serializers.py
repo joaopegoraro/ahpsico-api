@@ -32,6 +32,18 @@ class SimpleDoctorSerializer(serializers.ModelSerializer):
 
 
 class PatientSerializer(serializers.ModelSerializer):
+    doctors = serializers.PrimaryKeyRelatedField(
+        many=True,
+        read_only=True,
+        pk_field=serializers.UUIDField(format="hex_verbose"),
+    )
+
+    class Meta:
+        model = models.Patient
+        fields = "__all__"
+
+
+class SimplePatientSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Patient
         fields = [
@@ -68,7 +80,7 @@ class AdviceSerializer(serializers.ModelSerializer):
 
 class SessionSerializer(serializers.ModelSerializer):
     doctor = SimpleDoctorSerializer()
-    patient = PatientSerializer()
+    patient = SimplePatientSerializer()
     date = serializers.DateTimeField(format=models.Session.DATE_FORMAT)
 
     class Meta:

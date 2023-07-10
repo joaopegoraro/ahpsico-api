@@ -52,6 +52,7 @@ class PatientViewSetTestCase(BaseViewTestCase):
         response = self.client.get(url)
         expected_data = {
             "uuid": str(patient.pk),
+            "doctors": [str(doctor.pk)],
             "name": patient.name,
             "phone_number": patient.phone_number,
         }
@@ -105,6 +106,7 @@ class PatientViewSetTestCase(BaseViewTestCase):
         response = self.client.put(url, request_data)
         expected_data = {
             "uuid": str(patient.pk),
+            "doctors": [str(doctor.pk)],
             "name": new_name,
             "phone_number": patient.phone_number,
         }
