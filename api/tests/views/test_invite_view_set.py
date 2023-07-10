@@ -40,20 +40,37 @@ class InviteViewSetTestCase(BaseViewTestCase):
             response.data["detail"].code, rest_exceptions.PermissionDenied.default_code
         )
 
-    def test_user_has_no_invite_information_cant_retreive_invite(self):
+    def test_invite_already_sent_cant_be_created(self):
         self.authenticate()
-        mommy.make(models.Patient, uuid=self.user.uid)
-        invite = mommy.make(models.Invite)
-        detail_url = reverse("invites-detail", kwargs={"pk": invite.id})
-        response = self.client.get(detail_url)
-        self.assertEqual(
-            response.status_code, rest_exceptions.PermissionDenied.status_code
+        patient = mommy.make(models.Patient)
+        doctor = mommy.make(models.Doctor, uuid=self.user.uid)
+        invite = mommy.make(
+            models.Invite,
+            phone_number=patient.phone_number,
+            doctor=doctor,
+            patient=patient,
         )
+        saved_invite = models.Invite.objects.get(
+            doctor__pk=doctor.pk, phone_number=invite.phone_number
+        )
+        request_data = {"phone_number": invite.phone_number}
+        response = self.client.post(self.list_url, request_data)
+        self.assertEqual(response.status_code, exceptions.InviteAlreadySent.status_code)
         self.assertEqual(
-            response.data["detail"].code, rest_exceptions.PermissionDenied.default_code
+            response.data["detail"].code, exceptions.InviteAlreadySent.default_code
         )
 
-    def test_user_has_invite_information_can_retreive_invite(self):
+    def test_user_has_no_invite_information_cant_retrieve_invites(self):
+        self.authenticate()
+        mommy.make(models.Patient, uuid=self.user.uid)
+        detail_url = reverse("invites-list")
+        response = self.client.get(detail_url)
+        self.assertEqual(response.status_code, exceptions.NoInviteFound.status_code)
+        self.assertEqual(
+            response.data["detail"].code, exceptions.NoInviteFound.default_code
+        )
+
+    def test_user_has_invite_information_can_retrieve_invites(self):
         self.authenticate()
         doctor = mommy.make(models.Doctor, name="Jaime", phone_number="123")
         patient = mommy.make(models.Patient, uuid=self.user.uid, phone_number="1234")
@@ -64,19 +81,21 @@ class InviteViewSetTestCase(BaseViewTestCase):
             doctor=doctor,
             phone_number=patient.phone_number,
         )
-        detail_url = reverse("invites-detail", kwargs={"pk": invite.id})
+        detail_url = reverse("invites-list")
         response = self.client.get(detail_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        expected_data = {
-            "id": invite.id,
-            "doctor": {
-                "uuid": str(doctor.pk),
-                "name": doctor.name,
-                "description": doctor.description,
-            },
-            "patient": str(patient.pk),
-            "phone_number": patient.phone_number,
-        }
+        expected_data = [
+            {
+                "id": invite.id,
+                "doctor": {
+                    "uuid": str(doctor.pk),
+                    "name": doctor.name,
+                    "description": doctor.description,
+                },
+                "patient": str(patient.pk),
+                "phone_number": patient.phone_number,
+            }
+        ]
         self.assertEqual(json.dumps(response.data), json.dumps(expected_data))
 
     def test_phone_number_not_tied_to_any_patient_cant_create_invite(self):

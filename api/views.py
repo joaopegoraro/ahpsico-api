@@ -94,7 +94,7 @@ class RegisterUser(APIView):
 
 
 class InviteViewSet(
-    mixins.RetrieveModelMixin,
+    mixins.ListModelMixin,
     mixins.CreateModelMixin,
     mixins.DestroyModelMixin,
     viewsets.GenericViewSet,
@@ -116,12 +116,33 @@ class InviteViewSet(
             return [permissions.HasToken(), permissions.IsDoctor()]
         return super().get_permissions()
 
+    def list(self, request, *args, **kwargs):
+        uid = request.user.uid
+        invites = models.Invite.objects.filter(
+            doctor__pk=uid
+        ) | models.Invite.objects.filter(patient__pk=uid)
+
+        if invites.count() == 0:
+            raise exceptions.NoInviteFound()
+
+        serializer = serializers.InviteSerializer(invites, many=True)
+        return Response(serializer.data)
+
     def create(self, request, *args, **kwargs):
         uid = request.user.uid
 
         phone_number = request.data.get("phone_number")
         if not phone_number:
             return rest_exceptions.bad_request(request, None)
+
+        try:
+            saved_invite = models.Invite.objects.get(
+                doctor__pk=uid, phone_number=phone_number
+            )
+        except:
+            pass
+        else:
+            raise exceptions.InviteAlreadySent()
 
         try:
             doctor = models.Doctor.objects.get(pk=uid)

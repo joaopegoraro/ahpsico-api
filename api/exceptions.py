@@ -34,6 +34,18 @@ class UserAlreadyRegistered(APIException):
     default_code = "user_already_registered"
 
 
+class InviteAlreadySent(APIException):
+    status_code = status.HTTP_409_CONFLICT
+    default_detail = "There already exists an invite from this doctor to this patient"
+    default_code = "invite_already_sent"
+
+
+class NoInviteFound(APIException):
+    status_code = status.HTTP_404_NOT_FOUND
+    default_detail = "No invite was found with this account"
+    default_code = "invite_not_found"
+
+
 class PatientNotRegistered(APIException):
     status_code = status.HTTP_404_NOT_FOUND
     default_detail = "There are no patients registered with this phone number yet"
@@ -41,6 +53,6 @@ class PatientNotRegistered(APIException):
 
 
 class PatientAlreadyWithDoctor(APIException):
-    status_code = status.HTTP_404_NOT_FOUND
+    status_code = status.HTTP_409_CONFLICT
     default_detail = "You can't send the invite, the patient is already with the doctor"
     default_code = "patient_already_with_doctor"
