@@ -46,13 +46,38 @@ class PatientViewSetTestCase(BaseViewTestCase):
     def test_user_has_patient_information_can_retrieve(self):
         self.authenticate()
         doctor = mommy.make(models.Doctor, uuid=self.user.uid)
+
         patient = mommy.make(models.Patient)
         patient.doctors.add(doctor)
+
+        other_doctors = mommy.make(models.Doctor, _quantity=5)
+        for other_doctor in other_doctors:
+            patient.doctors.add(other_doctor)
+
         url = reverse(self.detail_url, kwargs={"pk": str(patient.pk)})
         response = self.client.get(url)
         expected_data = {
             "uuid": str(patient.pk),
             "doctors": [str(doctor.pk)],
+            "name": patient.name,
+            "phone_number": patient.phone_number,
+        }
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(json.dumps(response.data), json.dumps(expected_data))
+
+    def test_user_is_queried_patient_can_retrieve(self):
+        self.authenticate()
+        patient = mommy.make(models.Patient, uuid=self.user.uid)
+
+        doctors = mommy.make(models.Doctor, _quantity=5)
+        for doctor in doctors:
+            patient.doctors.add(doctor)
+
+        url = reverse(self.detail_url, kwargs={"pk": str(patient.pk)})
+        response = self.client.get(url)
+        expected_data = {
+            "uuid": str(patient.pk),
+            "doctors": sorted([*map(lambda d: str(d.pk), doctors)]),
             "name": patient.name,
             "phone_number": patient.phone_number,
         }

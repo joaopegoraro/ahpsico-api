@@ -243,6 +243,22 @@ class PatientViewSet(
             return [permissions.IsOwner()]
         return super().get_permissions()
 
+    def retrieve(self, request, *args, **kwargs):
+        uid = request.user.uid
+        pk = kwargs["pk"]
+
+        patient = self.get_object()
+        serializer = serializers.PatientSerializer(patient)
+        data = serializer.data
+
+        if str(uid) != pk:
+            try:
+                data["doctors"] = [str(models.Doctor.objects.get(pk=uid).pk)]
+            except:
+                data["doctors"] = []
+
+        return Response(data)
+
     @action(detail=True, permission_classes=[permissions.HasToken, permissions.IsOwner])
     def doctors(self, request, *args, **kwargs):
         uid = request.user.uid
