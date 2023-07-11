@@ -363,8 +363,13 @@ class PatientViewSet(
             advices = models.Advice.objects.filter(doctor__pk=uid, patients__pk=pk)
 
         serializer = serializers.AdviceSerializer(advices, many=True)
+        data = serializer.data
 
-        return Response(json.dumps(serializer.data), status=status.HTTP_200_OK)
+        if is_patient:
+            for advice in data:
+                advice["patients"] = [pk]
+
+        return Response(json.dumps(data), status=status.HTTP_200_OK)
 
 
 class SessionViewSet(

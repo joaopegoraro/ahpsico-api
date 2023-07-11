@@ -800,7 +800,7 @@ class PatientViewSetTestCase(BaseViewTestCase):
         expected_data = json.dumps(advice_list)
         self.assertEqual(response.data, expected_data)
 
-    def test_patient_can_list_its_own_advices(
+    def test_patient_can_list_its_own_advices_with_only_their_id_in_advice_patients(
         self,
     ):
         self.authenticate()
@@ -808,10 +808,11 @@ class PatientViewSetTestCase(BaseViewTestCase):
         patient = mommy.make(
             models.Patient, uuid=self.user.uid, name="Jaime", phone_number="1234"
         )
+        patient2 = mommy.make(models.Patient)
         patient.doctors.add(doctor)
-        advice1 = mommy.make(models.Advice, doctor=doctor, patients=[patient])
-        advice2 = mommy.make(models.Advice, doctor=doctor, patients=[patient])
-        advice3 = mommy.make(models.Advice, patients=[patient])
+        advice1 = mommy.make(models.Advice, doctor=doctor, patients=[patient, patient2])
+        advice2 = mommy.make(models.Advice, doctor=doctor, patients=[patient, patient2])
+        advice3 = mommy.make(models.Advice, patients=[patient, patient2])
         self.assertEqual(
             models.Advice.objects.filter(
                 doctor__pk=doctor.pk,
