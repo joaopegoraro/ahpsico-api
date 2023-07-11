@@ -387,7 +387,6 @@ class SessionViewSet(
 
 
 class AssignmentViewSet(
-    mixins.RetrieveModelMixin,
     mixins.CreateModelMixin,
     mixins.UpdateModelMixin,
     mixins.DestroyModelMixin,
@@ -407,7 +406,6 @@ class AssignmentViewSet(
 
 
 class AdviceViewSet(
-    mixins.RetrieveModelMixin,
     mixins.CreateModelMixin,
     mixins.UpdateModelMixin,
     mixins.DestroyModelMixin,
