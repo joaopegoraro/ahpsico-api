@@ -75,6 +75,16 @@ class Session(models.Model):
         return f"Doctor: {self.doctor} - Patient: ${self.patient}"
 
 
+class Schedule(models.Model):
+    date = models.DateTimeField()
+    doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE)
+
+    DATE_FORMAT = "%Y-%m-%dT%H:%M:%S%z"
+
+    def __str__(self):
+        return f"Schedule: {self.date} Doctor: {self.doctor}"
+
+
 class Assignment(models.Model):
     title = models.CharField(max_length=200)
     description = models.CharField(max_length=200)

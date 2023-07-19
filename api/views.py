@@ -239,6 +239,15 @@ class DoctorViewSet(
 
         return Response(json.dumps(serializer.data), status=status.HTTP_200_OK)
 
+    @action(detail=True, permission_classes=[permissions.HasToken])
+    def schedule(self, request, *args, **kwargs):
+        uid = request.user.uid
+
+        schedule = models.Schedule.objects.filter(doctor__pk=uid)
+        serializer = serializers.ScheduleSerializer(schedule, many=True)
+
+        return Response(json.dumps(serializer.data), status=status.HTTP_200_OK)
+
 
 class PatientViewSet(
     mixins.RetrieveModelMixin,
@@ -389,6 +398,42 @@ class SessionViewSet(
 
     serializer_class = serializers.SessionSerializer
     queryset = models.Session.objects.all()
+
+    def create(self, request, *args, **kwargs):
+        data = JSONParser().parse(request)
+
+        session_serializer = serializers.SessionSerializer(data=data)
+        session_serializer.is_valid(raise_exception=True)
+        session = Session(**session_serializer.validated_data)
+
+        if models.Session.objects.filter(
+            doctor__pk=session.doctor.pk,
+            patient__pk=session.patient.pk,
+            date=session.date,
+        ).exists():
+            raise exceptions.SessionAlreadyBooked()
+
+        return Response(
+            json.dumps(session_serializer.data), status=status.HTTP_201_CREATED
+        )
+
+
+class ScheduleViewSet(
+    mixins.CreateModelMixin,
+    mixins.DestroyModelMixin,
+    viewsets.GenericViewSet,
+):
+    """
+    A viewset for creating and deleting schedule instances.
+
+    * Requires token authentication.
+    """
+
+    authentication_classes = [authentication.FirebaseAuthentication]
+    permission_classes = [permissions.HasToken, permissions.IsScheduleOwner]
+
+    serializer_class = serializers.ScheduleSerializer
+    queryset = models.Schedule.objects.all()
 
 
 class AssignmentViewSet(

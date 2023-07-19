@@ -10,6 +10,7 @@ router.register(r"sessions", views.SessionViewSet, basename="sessions")
 router.register(r"assignments", views.AssignmentViewSet, basename="assignments")
 router.register(r"advices", views.AdviceViewSet, basename="advices")
 router.register(r"invites", views.InviteViewSet, basename="invites")
+router.register(r"schedule", views.ScheduleViewSet, basename="schedule")
 
 # print(router.get_urls())
 urlpatterns = [

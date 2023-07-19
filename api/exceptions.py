@@ -45,6 +45,11 @@ class NoInviteFound(APIException):
     default_detail = "No invite was found with this account"
     default_code = "invite_not_found"
 
+class SessionAlreadyBooked(APIException):
+    status_code = status.HTTP_409_CONFLICT
+    default_detail = "There already is a session booked at this time."
+    default_code = "session_already_booked"
+
 
 class PatientNotRegistered(APIException):
     status_code = status.HTTP_404_NOT_FOUND

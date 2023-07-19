@@ -88,6 +88,16 @@ class SessionSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class SessionSerializer(serializers.ModelSerializer):
+    doctor = SimpleDoctorSerializer()
+    patient = SimplePatientSerializer()
+    date = serializers.DateTimeField(format=models.Session.DATE_FORMAT)
+
+    class Meta:
+        model = models.Session
+        fields = "__all__"
+
+
 class SimpleSessionSerializer(serializers.ModelSerializer):
     date = serializers.DateTimeField(format=models.Session.DATE_FORMAT)
 
@@ -97,6 +107,18 @@ class SimpleSessionSerializer(serializers.ModelSerializer):
             "id",
             "date",
         ]
+
+
+class ScheduleSerializer(serializers.ModelSerializer):
+    doctor = serializers.PrimaryKeyRelatedField(
+        read_only=True,
+        pk_field=serializers.UUIDField(format="hex_verbose"),
+    )
+    date = serializers.DateTimeField(format=models.Schedule.DATE_FORMAT)
+
+    class Meta:
+        model = models.Session
+        fields = "__all__"
 
 
 class AssignmentSerializer(serializers.ModelSerializer):

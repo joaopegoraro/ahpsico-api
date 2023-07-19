@@ -14,11 +14,12 @@ se o usuário é paciente ou psicólogo, e mostra tela de criação de perfil;
   - Mandar dica;
 
 ## Tela paciente:
-- Botão para ver sessões -> abre tela de sessões;
-- Botão para ver tarefas -> abre tela de tarefas;
-- Botão para ver dicas -> abre tela de dicas;
-- Próxima sessão -> abre tela de sessão;
-- Tarefas pendentes -> abre tela de tarefa;
+- Caso seja médico vendo a tela:
+  - Botão para ver sessões -> abre tela de sessões;
+  - Botão para ver tarefas -> abre tela de tarefas;
+  - Botão para ver dicas -> abre tela de dicas;
+  - Próxima sessão -> abre tela de sessão;
+  - Tarefas pendentes -> abre tela de tarefa;
 
 ## Tela sessões:
 - Lista de sessões, ordenadas por data -> abre tela de sessão;

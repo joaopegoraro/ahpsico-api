@@ -96,6 +96,17 @@ class HasAssignmentInformation(permissions.BasePermission):
         is_patient = obj.patient.pk == uid
         return is_doctor or is_patient
 
+class IsScheduleOwner(permissions.BasePermission):
+    """
+    Custom permission to only allow only who owns the schedule,
+    which is the doctor.
+    """
+
+    def has_object_permission(self, request, view, obj):
+        uid = request.user.uid
+        is_doctor = obj.doctor.pk == uid
+        return is_doctor
+
 
 class IsAdviceOwner(permissions.BasePermission):
     """
