@@ -43,19 +43,9 @@ class Advice(models.Model):
     def __str__(self):
         return f"{self.message} - from {self.doctor})"
 
-
-class SessionGroup(models.Model):
-    doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE)
-    patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
-
-    def __str__(self):
-        return f"Doctor: {self.doctor} - Patient: ${self.patient}"
-
-
 class Session(models.Model):
     doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE)
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
-    group_id = models.ForeignKey(SessionGroup, on_delete=models.CASCADE, null=True)
     group_index = models.IntegerField(null=True)
     status = models.CharField(
         max_length=200,
@@ -77,12 +67,13 @@ class Session(models.Model):
 
 class Schedule(models.Model):
     date = models.DateTimeField()
+    is_session = models.BooleanField()
     doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE)
 
     DATE_FORMAT = "%Y-%m-%dT%H:%M:%S%z"
 
     def __str__(self):
-        return f"Schedule: {self.date} Doctor: {self.doctor}"
+        return f"Schedule: {self.date}, is session? {self.is_session} - Doctor: {self.doctor}"
 
 
 class Assignment(models.Model):

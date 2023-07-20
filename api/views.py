@@ -241,10 +241,23 @@ class DoctorViewSet(
 
     @action(detail=True, permission_classes=[permissions.HasToken])
     def schedule(self, request, *args, **kwargs):
-        uid = request.user.uid
+        pk = kwargs["pk"]
 
-        schedule = models.Schedule.objects.filter(doctor__pk=uid)
-        serializer = serializers.ScheduleSerializer(schedule, many=True)
+        sessions = models.Session.objects.filter(doctor__pk=pk)
+        schedule_sessions = map(
+            lambda session: models.Schedule(
+                doctor=session.doctor,
+                date=session.date,
+                is_session=True,
+            ),
+            sessions,
+        )
+
+        schedule = models.Schedule.objects.filter(doctor__pk=pk)
+        serializer = serializers.ScheduleSerializer(
+            schedule + schedule_sessions,
+            many=True,
+        )
 
         return Response(json.dumps(serializer.data), status=status.HTTP_200_OK)
 
