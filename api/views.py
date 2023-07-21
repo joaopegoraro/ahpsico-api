@@ -243,7 +243,12 @@ class DoctorViewSet(
     def schedule(self, request, *args, **kwargs):
         pk = kwargs["pk"]
 
-        sessions = models.Session.objects.filter(doctor__pk=pk)
+        sessions = (
+            models.Session.objects.filter(doctor__pk=pk)
+            .exclude(status=enums.SessionStatus.CANCELED)
+            .exclude(status=enums.SessionStatus.CONCLUDED)
+        )
+
         schedule_sessions = map(
             lambda session: models.Schedule(
                 doctor=session.doctor,
@@ -421,10 +426,30 @@ class SessionViewSet(
 
         if models.Session.objects.filter(
             doctor__pk=session.doctor.pk,
-            patient__pk=session.patient.pk,
             date=session.date,
         ).exists():
             raise exceptions.SessionAlreadyBooked()
+
+        session_serializer.save()
+
+        return Response(
+            json.dumps(session_serializer.data), status=status.HTTP_201_CREATED
+        )
+
+    def update(self, request, *args, **kwargs):
+        data = JSONParser().parse(request)
+
+        session_serializer = serializers.SessionSerializer(data=data, partial=True)
+        session_serializer.is_valid(raise_exception=True)
+        session = Session(**session_serializer.validated_data)
+
+        if models.Session.objects.filter(
+            doctor__pk=session.doctor.pk,
+            date=session.date,
+        ).exists():
+            raise exceptions.SessionAlreadyBooked()
+
+        session_serializer.save()
 
         return Response(
             json.dumps(session_serializer.data), status=status.HTTP_201_CREATED
