@@ -1,8 +1,8 @@
 # Index
 1. [Authentication](#authentication)
-    1. [POST /validation-codes](#auth1)
-    2. [POST /login](#auth2)
-    3. [POST /signup](#auth3)
+    2. [POST /login](#auth1)
+    3. [POST /signup](#auth2)
+    3. [POST /invite](#auth3)
 2. [Doctors](#doctors)
     1. [GET /doctors/{id}](#doc1)
     2. [PUT /doctors/{id}](#doc2)
@@ -29,74 +29,54 @@
     3. [PUT /advices/{id}](#adv3)
     4. [DELETE /advices/{id}](#adv4)
     5. [GET /doctors/{id}/advices ](#adv5)
-    5. [GET /patients/{id}/advices](#adv6)
+    6. [GET /patients/{id}/advices](#adv6)
 <br></br>
 
 # Authentication <a name="authentication"></a>
 
-## `@POST` /validation-codes` <a name="auth1"></a>
-### Autenticação: **Não necessária**;
-### Request body:
-```json
-{
-    "number": str,
-}
-```
+## `@POST` /login <a name="auth1"></a>
+### Autenticação: **Token**;
 ### Response body:
 ```json
 {
-    "authentication_type": "SIGNUP" || "LOGIN",
-}
-```
-
-- Envia código de validação para o telefone `$number` enviado pelo request body;
-- Verifica se já existe uma conta com esse número, 
-    - Se sim retorna `authentication_type` com `"LOGIN"`;
-    - Se não, `"SIGNUP"`;
-<br></br>
-
-## `@POST` /login <a name="auth2"></a>
-### Autenticação: **Não necessária**;
-### Request body:
-```json
-{
-    "phone_number": str,
-    "code": str,
-}
-```
-### Response body:
-```json
-{
-    "token": str,
+    "user_uuid": str,
     "is_doctor": bool,
 }
 ```
 
-- Valida se o código é valido para aquele número;
-    - Se sim, retorna tokens;
+- Valida se o token é valido,
+    - Se sim, retorna se o usuário é doutor ou não e seu uuid;
 <br></br>
 
-## `@POST` /signup <a name="auth3"></a>
-### Autenticação: **Não necessária**;
+## `@POST` /signup <a name="auth2"></a>
+### Autenticação: **Token**;
 ### Request body:
 ```json
 {
     "name": str,
     "is_doctor": bool,
-    "phone_number": str,
-    "code": str,
 }
 ```
 ### Response body:
 ```json
 {
     "user_uuid": str,
-    "token": str,
-    "is_doctor": bool,
 }
 ```
-- Valida se o código é valido para aquele número;
-    - Se sim, cria um usuário retorna tokens;
+- Valida se o token é valido,
+    - Se sim, cria um usuário e retorna uuid
+<br></br>
+
+## `@POST` /invite <a name="auth2"></a>
+### Autenticação: **Token**;
+### Request body:
+```json
+{
+    "phone_number": str,
+}
+```
+- Valida se o token é valido,
+    - Se sim, cria um convite para o usuário que possui o telefone informado
 <br></br>
 
 # Doctors <a name="doctors"></a>
@@ -118,12 +98,25 @@
     "tags": [str],
 }
 ```
-
  - Retorna o perfil do doutor onde `doctor.uuid = $id`;
 <br></br>
 
 ## `@PUT` /doctors/`{id}` <a name="doc2"></a>
 ### Autenticação: **Token**;
+### Request body:
+```json
+{
+    "photo": str,
+    "name": str,
+    "phone_number": str,
+    "description": str,
+    "crp": str,
+    "addresses": [str],
+    "pix_key": str,
+    "payment_details": str,
+    "tags": [str],
+}
+```
 ### Response body:
 ```json
 {
@@ -165,6 +158,13 @@
 
 ## `@PUT` /patients/`{id}` <a name="pat2"></a>
 ### Autenticação: **Token**;
+### Request body:
+```json
+{
+    "name": str,
+    "phone_number": str,
+    "doctor_ids": str[];
+}
 ### Response body:
 ```json
 {
@@ -472,7 +472,7 @@ onde `asignment.id = $id`,
 - Deleta tarefa do banco, onde `asignment.id = $id`;
 <br></br>
 
-## `@GET` /patients/`{id}`/assignments?pending=`{upcoming} <a name="ass5"></a>
+## `@GET` /patients/`{id}`/assignments?pending=`{pending} <a name="ass5"></a>
 ### Autenticação: **Token**;
 ### Response body:
 ```json
